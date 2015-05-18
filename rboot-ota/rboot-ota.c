@@ -1,11 +1,16 @@
+//////////////////////////////////////////////////
+// API for OTA and rBoot config, for ESP8266.
+// OTA code based on SDK sample from Espressif.
+// richardaburton@gmail.com
+//////////////////////////////////////////////////
+
 #include <c_types.h>
 #include <user_interface.h>
 #include <espconn.h>
 #include <mem.h>
 #include <osapi.h>
 
-#include "include\rboot-ota.h"
-#include "include\missingdefs.h"
+#include "rboot-ota.h"
 
 // structure to hold our internal update state
 typedef struct {
@@ -196,8 +201,8 @@ static void ICACHE_FLASH_ATTR rboot_ota_deinit() {
 	}
 	
 	// call user call back
-	if (ota->check_cb) {
-		ota->check_cb(ota);
+	if (ota->callback) {
+		ota->callback(ota);
 	}
 	
 }

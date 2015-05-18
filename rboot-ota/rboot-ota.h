@@ -1,6 +1,12 @@
 #ifndef __RBOOT_OTA_H__
 #define __RBOOTOTA_H__
 
+//////////////////////////////////////////////////
+// API for OTA and rBoot config, for ESP8266.
+// OTA code based on SDK sample from Espressif.
+// richardaburton@gmail.com
+//////////////////////////////////////////////////
+
 #include "rboot.h"
 
 #define UPGRADE_FLAG_IDLE		0x00
@@ -14,8 +20,8 @@ typedef struct {
 	uint16 port;
 	uint8 *request;
 	uint8 rom_slot;
+	ota_callback callback;
 	bool result;
-	ota_callback check_cb;
 } rboot_ota;
 
 bool rboot_ota_start(rboot_ota *ota);
