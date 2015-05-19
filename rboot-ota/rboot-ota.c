@@ -39,17 +39,29 @@ rboot_config ICACHE_FLASH_ATTR rboot_get_config() {
 // write the rboot config
 // preserves contents of rest of sector, so rest
 // of sector can be used to store user data
+// updates checksum automatically
 bool ICACHE_FLASH_ATTR rboot_set_config(rboot_config *conf) {
 	uint8 *buffer;
+	uint8 chksum;
+	uint8 *ptr;
+	
 	buffer = (uint8*)os_malloc(SECTOR_SIZE);
 	if (!buffer) {
 		uart0_send("no ram!\r\n");
 		return false;
 	}
+	
+	chksum = CHKSUM_INIT;
+	for (ptr = conf; ptr < &conf->chksum; ptr++) {
+		chksum ^= *ptr;
+	}
+	conf->chksum = chksum;
+	
 	spi_flash_read(BOOT_CONFIG_SECTOR * SECTOR_SIZE, (uint32*)buffer, SECTOR_SIZE);
 	memcpy(buffer, conf, sizeof(rboot_config));
 	spi_flash_erase_sector(BOOT_CONFIG_SECTOR);
 	spi_flash_write(BOOT_CONFIG_SECTOR * SECTOR_SIZE, (uint32*)buffer, SECTOR_SIZE);
+	
 	os_free(buffer);
 	return true;
 }
