@@ -136,10 +136,10 @@ static bool ICACHE_FLASH_ATTR rboot_ota_init(rboot_ota *ota) {
 	// store user update options
 	upgrade->ota = ota;
 	
-	// get details of rom slot to flash
+	// get details of rom slot to update
 	bootconf = rboot_get_config();
 	if ((ota->rom_slot > bootconf.count) || (bootconf.roms[ota->rom_slot] % 4)) {
-		uart0_send("Bad flash slot.\r\n");
+		uart0_send("Bad rom slot.\r\n");
 		os_free(upgrade);
 		return false;
 	}

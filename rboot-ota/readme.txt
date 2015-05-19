@@ -3,7 +3,7 @@ rBoot - User API and OTA support for rBoot on the ESP8266
 by Richard A Burton, richardaburton@gmail.com
 http://richard.burtons.org/
 
-See rBoot readme.txt for how to create suitable rom to flash OTA.
+See rBoot readme.txt for how to create suitable rom images to update OTA.
 
 This provides a couple of simple APIs for getting rBoot config and one for over
 the air updates (OTA):
@@ -13,7 +13,7 @@ the air updates (OTA):
     in it, including the rom layout.
 
   bool rboot_set_config(rboot_config *conf);
-    Saves the rboot_config structure back to sector 2 of the eeprom, while
+    Saves the rboot_config structure back to sector 2 of the flash, while
     maintaining the contents of the rest of the sector. You can use the rest of
     this sector for your app settings, as long as protect this structure when
     you do so.
@@ -42,6 +42,6 @@ the air updates (OTA):
     - ip is the ip of the OTA http server.
     - port is the server port (e.g. 80).
     - request is the http request to send.
-    - rom_slot is the rom to flash (numbered from zero).
+    - rom_slot is the rom slot to write to (numbered from zero).
     - call back is the user code function to call on completion of OTA.
     - result can be checked in the callback to see if OTA was successful or not.
