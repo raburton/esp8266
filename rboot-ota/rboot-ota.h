@@ -13,7 +13,7 @@
 #define UPGRADE_FLAG_START		0x01
 #define UPGRADE_FLAG_FINISH		0x02
 
-typedef void (*ota_callback)(void* server);
+typedef void (*ota_callback)(void* ota);
 
 typedef struct {
 	uint8 ip[4];
