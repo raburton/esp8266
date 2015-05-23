@@ -15,3 +15,5 @@ flash, but I currently have no intention to add that to esptool2, it is purely a
 rom creating utility. It has become an integral part of my build process now and
 has added functionality needed for building the rBoot boot loader. Since I have
 released rBoot I needed to release this as well.
+
+Run tool for full usage instructions, or look at the code.

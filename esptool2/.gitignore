@@ -1,0 +1,9 @@
+*.o
+*.exe
+*.user
+*.sdf
+*.opensdf
+*.suo
+esptool
+Debug
+Release

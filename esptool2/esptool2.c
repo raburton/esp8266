@@ -268,7 +268,7 @@ end_function:
 // Choice of type requires appropriately linked elf file.
 // Produces error message on failure (so caller doesn't need to).
 bool CreateBinFile(char *elffile, char *imagefile, int bootver, unsigned char mode,
-	unsigned char clock, unsigned char size, char *sections[], int numsec) {
+	unsigned char clock, unsigned char size, bool iromchksum, char *sections[], int numsec) {
 
 	bool ret = false;
 	int i, pad, len;
@@ -310,7 +310,7 @@ bool CreateBinFile(char *elffile, char *imagefile, int bootver, unsigned char mo
 			error("Error: Failed to write header to image file.\r\n");
 			goto end_function;
 		}
-		if(!WriteElfSection(elf, outfile, ".irom0.text", true, true, IMAGE_PADDING, 0)) {
+		if(!WriteElfSection(elf, outfile, ".irom0.text", true, true, IMAGE_PADDING, (iromchksum ? &chksum : 0))) {
 			goto end_function;
 		}
 	}
@@ -391,6 +391,7 @@ int main(int argc, char *argv[]) {
 	bool libfile = false;
 	bool headerfile = false;
 	bool paramerror = false;
+	bool iromchksum = false;
 	int bootver = 0;
 	unsigned char mode = 0;
 	unsigned char size = 0;
@@ -444,6 +445,8 @@ int main(int argc, char *argv[]) {
 			clock = 0;
 		} else if (!strcmp(argv[i], "-80")) {
 			clock = 15;
+		} else if (!strcmp(argv[i], "-iromchksum")) {
+			iromchksum = true;
 		} else if (!strcmp(argv[i], "--")) {
 			i++;
 			break;
@@ -486,11 +489,12 @@ int main(int argc, char *argv[]) {
 		print("        bootloader: -boot0 -boot1 -boot2 (default -boot0)\r\n");
 		print("          -boot0 = standalone app, not built for bootloader use\r\n");
 		print("          -boot1 = built for bootloader v1.1\r\n");
-		print("          -boot2 = built for bootloader v1.2+\r\n");
+		print("          -boot2 = built for bootloader v1.2+ (use for rBoot roms)\r\n");
 		print("          (elf file must have been linked appropriately for chosen option)\r\n");
-		print("        spi size: -256 -512 -1024 -2048 -4096 (default -512)\r\n");
+		print("        spi size (kb): -256 -512 -1024 -2048 -4096 (default -512)\r\n");
 		print("        spi mode: -qio -qout -dio -dout (default -qio)\r\n");
 		print("        spi speed: -20 -26.7 -40 -80 (default -40)\r\n");
+		//print("        include sdk lib in checksum: -iromchksum (requires special rBoot)\r\n");
 		print("\r\n");
 		print("General options:\r\n");
 		print("  -quiet prints only error messages\r\n");
@@ -531,7 +535,7 @@ int main(int argc, char *argv[]) {
 
 	// do it
 	if (binfile) {
-		if (!CreateBinFile(infile, outfile, bootver, mode, clock, size, &argv[i], numstr)) {
+		if (!CreateBinFile(infile, outfile, bootver, mode, clock, size, iromchksum, &argv[i], numstr)) {
 			remove(outfile);
 			return -1;
 		}
