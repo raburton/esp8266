@@ -1,11 +1,12 @@
-This is a sample project to show how to build roms for use with rBoot.
+This is a sample project to show how to build roms for use with rBoot and how to
+perform an OTA update.
 
 To compile
 ----------
 1) You will need to copy rboot.h rboot-ota.h & rboot-ota.c in to this directory.
 2) You will also need a compiled copy of esptool2.
 3) Edit the Makefile to set the paths to the SDK and esptool2.
-4) Put your SSID & password in user_config.h
+4) Put your SSID, password and OTA server IP in main.h
 4) If you haven't already compiled rBoot you'll need to do that too.
 
 All the above are available from GitHub: https://github.com/raburton/esp8266

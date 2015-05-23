@@ -13,7 +13,7 @@
 #define UPGRADE_FLAG_START		0x01
 #define UPGRADE_FLAG_FINISH		0x02
 
-typedef void (*ota_callback)(void* ota);
+typedef void (*ota_callback)(void* server, bool result);
 
 typedef struct {
 	uint8 ip[4];
@@ -21,7 +21,6 @@ typedef struct {
 	uint8 *request;
 	uint8 rom_slot;
 	ota_callback callback;
-	bool result;
 } rboot_ota;
 
 bool rboot_ota_start(rboot_ota *ota);

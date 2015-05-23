@@ -49,7 +49,7 @@ bool ICACHE_FLASH_ATTR rboot_set_config(rboot_config *conf) {
 	
 	buffer = (uint8*)os_malloc(SECTOR_SIZE);
 	if (!buffer) {
-		uart0_send("no ram!\r\n");
+		uart0_send("No ram!\r\n");
 		return false;
 	}
 	
@@ -112,7 +112,7 @@ static bool ICACHE_FLASH_ATTR write_flash(uint8 *data, uint16 len) {
 	os_memcpy(upgrade->extra_bytes, buffer + len, upgrade->extra_count);
 
 	// check data will fit
-	if (upgrade->start_addr + len < (upgrade->start_sector + upgrade->max_sector_count) * SECTOR_SIZE) {
+	//if (upgrade->start_addr + len < (upgrade->start_sector + upgrade->max_sector_count) * SECTOR_SIZE) {
 
 		if (len > SECTOR_SIZE) {
 			// here we should erase current (if not already done), next
@@ -132,7 +132,7 @@ static bool ICACHE_FLASH_ATTR write_flash(uint8 *data, uint16 len) {
 			ret = true;
 			upgrade->start_addr += len;
 		}
-	}
+	//}
 
 	os_free(buffer);
 	return ret;
@@ -145,7 +145,7 @@ static bool ICACHE_FLASH_ATTR rboot_ota_init(rboot_ota *ota) {
 
 	upgrade = (upgrade_param*)os_zalloc(sizeof(upgrade_param));
 	if (!upgrade) {
-		uart0_send("no ram!\r\n");
+		uart0_send("No ram!\r\n");
 		return false;
 	}
 	
@@ -161,12 +161,12 @@ static bool ICACHE_FLASH_ATTR rboot_ota_init(rboot_ota *ota) {
 	}
 	upgrade->start_addr = bootconf.roms[ota->rom_slot];
 	upgrade->start_sector = bootconf.roms[ota->rom_slot] / SECTOR_SIZE;
-	upgrade->max_sector_count = 200; //todo fix
+	//upgrade->max_sector_count = 200;
 	
 	// create connection
 	upgrade->conn = (struct espconn *)os_zalloc(sizeof(struct espconn));
 	if (!upgrade->conn) {
-		uart0_send("no ram!\r\n");
+		uart0_send("No ram!\r\n");
 		os_free(upgrade);
 		return false;
 	}
@@ -174,7 +174,7 @@ static bool ICACHE_FLASH_ATTR rboot_ota_init(rboot_ota *ota) {
 	if (!upgrade->conn->proto.tcp) {
 		os_free(upgrade->conn);
 		upgrade->conn = 0;
-		uart0_send("no ram!\r\n");
+		uart0_send("No ram!\r\n");
 		os_free(upgrade);
 		return false;
 	}
@@ -189,6 +189,7 @@ static bool ICACHE_FLASH_ATTR rboot_ota_init(rboot_ota *ota) {
 // will call the user call back to indicate completion
 static void ICACHE_FLASH_ATTR rboot_ota_deinit() {
 	
+	bool result;
 	rboot_ota *ota;
 	struct espconn *conn;
 
@@ -210,15 +211,15 @@ static void ICACHE_FLASH_ATTR rboot_ota_deinit() {
 	
 	// check for completion
 	if (system_upgrade_flag_check() == UPGRADE_FLAG_FINISH) {
-		ota->result = true;
+		result = true;
 	} else {
 		system_upgrade_flag_set(UPGRADE_FLAG_IDLE);
-		ota->result = false;
+		result = false;
 	}
 	
 	// call user call back
 	if (ota->callback) {
-		ota->callback(ota);
+		ota->callback(ota, result);
 	}
 	
 }
@@ -231,7 +232,9 @@ static void ICACHE_FLASH_ATTR upgrade_recvcb(void *arg, char *pusrdata, unsigned
 	// first reply?
 	if (upgrade->totallength == 0) {
 		//	valid http response?
-		if ((ptrLen = os_strstr(pusrdata, "Content-Length: ")) && (ptrData = os_strstr(ptrLen, "\r\n\r\n"))) {
+		if ((ptrLen = (char*)os_strstr(pusrdata, "Content-Length: ")) && (ptrData = (char*)os_strstr(ptrLen, "\r\n\r\n"))
+			&& (os_strncmp(pusrdata + 9, "200", 3) == 0)) {
+			
 			// end of header/start of data
 			ptrData += 4;
 			// length of data after header in this chunk
@@ -246,8 +249,9 @@ static void ICACHE_FLASH_ATTR upgrade_recvcb(void *arg, char *pusrdata, unsigned
 			*ptr = '\0'; // destructive
 			upgrade->sumlength = atoi(ptrLen);
 		} else {
-			// fail
-			// not a valid http header
+			// fail, not a valid http header/non-200 response/etc.
+			rboot_ota_deinit();
+			return;
 		}
 	} else {
 		// not the first chunk, process it
@@ -257,7 +261,6 @@ static void ICACHE_FLASH_ATTR upgrade_recvcb(void *arg, char *pusrdata, unsigned
 
 	// check if we are finished
 	if (upgrade->totallength == upgrade->sumlength) {
-		uart0_send("upgrade file download finished.\r\n");
 		system_upgrade_flag_set(UPGRADE_FLAG_FINISH);
 		// clean up and call user callback
 		rboot_ota_deinit();
@@ -300,7 +303,7 @@ static void ICACHE_FLASH_ATTR upgrade_connect_cb(void *arg) {
 	espconn_regist_disconcb(upgrade->conn, upgrade_disconcb);
 	espconn_regist_recvcb(upgrade->conn, upgrade_recvcb);
 
-	// send the http request, with timeout
+	// send the http request, with timeout for reply and rest of update to complete
 	os_timer_setfn(&ota_timer, (os_timer_func_t *)rboot_ota_deinit, 0);
 	os_timer_arm(&ota_timer, 10000, 0);
 	espconn_sent(upgrade->conn, upgrade->ota->request, os_strlen((char*)upgrade->ota->request));
@@ -332,7 +335,7 @@ bool ICACHE_FLASH_ATTR rboot_ota_start(rboot_ota *ota) {
 	
 	// check parameters
 	if (!ota || !ota->request) {
-		uart0_send("invalid parameters\r\n");
+		uart0_send("Invalid parameters.\r\n");
 		return false;
 	}
 	

@@ -31,12 +31,11 @@ the air updates (OTA):
 	using, very few changes will be needed to switch to this.
     
     typedef struct {
-      uint8 ip[4];
-      uint16 port;
-      uint8 *request;
-      uint8 rom_slot;
-      bool result;
-      ota_callback callback;
+        uint8 ip[4];
+        uint16 port;
+        uint8 *request;
+        uint8 rom_slot;
+        ota_callback callback;
     } rboot_ota;
     
     - ip is the ip of the OTA http server.
@@ -44,4 +43,3 @@ the air updates (OTA):
     - request is the http request to send.
     - rom_slot is the rom slot to write to (numbered from zero).
     - call back is the user code function to call on completion of OTA.
-    - result can be checked in the callback to see if OTA was successful or not.
