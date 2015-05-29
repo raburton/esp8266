@@ -230,7 +230,7 @@ static void ICACHE_FLASH_ATTR upgrade_recvcb(void *arg, char *pusrdata, unsigned
 	char *ptrData, *ptrLen, *ptr;
 	
 	// first reply?
-	if (upgrade->totallength == 0) {
+	if (upgrade->sumlength == 0) {
 		//	valid http response?
 		if ((ptrLen = (char*)os_strstr(pusrdata, "Content-Length: ")) && (ptrData = (char*)os_strstr(ptrLen, "\r\n\r\n"))
 			&& (os_strncmp(pusrdata + 9, "200", 3) == 0)) {
