@@ -23,8 +23,8 @@ typedef struct {
 	uint8 extra_count;
 	uint8 extra_bytes[4];
 	rboot_ota *ota;
-	uint32 totallength;
-	uint32 sumlength;
+	uint32 total_len;
+	uint32 content_len;
 	struct espconn *conn;
 } upgrade_param;
 
@@ -232,9 +232,10 @@ static void ICACHE_FLASH_ATTR upgrade_recvcb(void *arg, char *pusrdata, unsigned
 	char *ptrData, *ptrLen, *ptr;
 	
 	// first reply?
-	if (upgrade->totallength == 0) {
-		//	valid http response?
-		if ((ptrLen = (char*)os_strstr(pusrdata, "Content-Length: ")) && (ptrData = (char*)os_strstr(ptrLen, "\r\n\r\n"))
+	if (upgrade->content_len == 0) {
+		// valid http response?
+		if ((ptrLen = (char*)os_strstr(pusrdata, "Content-Length: "))
+			&& (ptrData = (char*)os_strstr(ptrLen, "\r\n\r\n"))
 			&& (os_strncmp(pusrdata + 9, "200", 3) == 0)) {
 			
 			// end of header/start of data
@@ -242,14 +243,14 @@ static void ICACHE_FLASH_ATTR upgrade_recvcb(void *arg, char *pusrdata, unsigned
 			// length of data after header in this chunk
 			length -= (ptrData - pusrdata);
 			// running total of download length
-			upgrade->totallength += length;
+			upgrade->total_len += length;
 			// process current chunk
 			write_flash((uint8*)ptrData, length);
 			// work out total download size
 			ptrLen += 16;
 			ptr = (char *)os_strstr(ptrLen, "\r\n");
 			*ptr = '\0'; // destructive
-			upgrade->sumlength = atoi(ptrLen);
+			upgrade->content_len = atoi(ptrLen);
 		} else {
 			// fail, not a valid http header/non-200 response/etc.
 			rboot_ota_deinit();
@@ -257,12 +258,12 @@ static void ICACHE_FLASH_ATTR upgrade_recvcb(void *arg, char *pusrdata, unsigned
 		}
 	} else {
 		// not the first chunk, process it
-		upgrade->totallength += length;
+		upgrade->total_len += length;
 		write_flash((uint8*)pusrdata, length);
 	}
-
+	
 	// check if we are finished
-	if (upgrade->totallength == upgrade->sumlength) {
+	if (upgrade->total_len == upgrade->content_len) {
 		system_upgrade_flag_set(UPGRADE_FLAG_FINISH);
 		// clean up and call user callback
 		rboot_ota_deinit();
