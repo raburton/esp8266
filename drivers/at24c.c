@@ -1,6 +1,8 @@
 ////////////////////////////////////////////////////
 // I2C driver for AT24C series eeproms for ESP8266.
+// Copyright 2015 Richard A Burton
 // richardaburton@gmail.com
+// See license.txt for license terms.
 ////////////////////////////////////////////////////
 
 #include <c_types.h>

@@ -1,6 +1,8 @@
 //////////////////////////////////////////////////
 // Simple timezone example for ESP8266.
+// Copyright 2015 Richard A Burton
 // richardaburton@gmail.com
+// See license.txt for license terms.
 //////////////////////////////////////////////////
 
 // custom function to apply a timezone to the supplied tm struct

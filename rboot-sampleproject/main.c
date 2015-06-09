@@ -1,6 +1,8 @@
 //////////////////////////////////////////////////
 // rBoot sample project.
+// Copyright 2015 Richard A Burton
 // richardaburton@gmail.com
+// See license.txt for license terms.
 //////////////////////////////////////////////////
 
 #include <c_types.h>
@@ -39,19 +41,13 @@ void ICACHE_FLASH_ATTR wifi_config_station() {
 
 	struct station_config stationConf;
 
-	//Set station mode
 	wifi_set_opmode(0x1);
-
-	//Set ap settings
 	stationConf.bssid_set = 0;
 	os_strcpy(&stationConf.ssid, SSID, os_strlen(SSID));
 	os_strcpy(&stationConf.password, PASS, os_strlen(PASS));
-
 	wifi_station_set_config(&stationConf);
-	uart0_send("init wifi...\r\n");
-
+	uart0_send("init connecting...\r\n");
 	wifi_station_connect();
-
 	os_timer_disarm(&network_timer);
 	os_timer_setfn(&network_timer, (os_timer_func_t *)network_wait_for_ip, NULL);
 	os_timer_arm(&network_timer, 2000, 0);

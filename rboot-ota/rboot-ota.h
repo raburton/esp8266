@@ -3,8 +3,10 @@
 
 //////////////////////////////////////////////////
 // API for OTA and rBoot config, for ESP8266.
-// OTA code based on SDK sample from Espressif.
+// Copyright 2015 Richard A Burton
 // richardaburton@gmail.com
+// See license.txt for license terms.
+// OTA code based on SDK sample from Espressif.
 //////////////////////////////////////////////////
 
 #include "rboot.h"
