@@ -553,5 +553,6 @@ int main(int argc, char *argv[]) {
 	}
 	
 	print("Successfully created '%s'.\r\n", outfile);
+	return 0;
 
 }
