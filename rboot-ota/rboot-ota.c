@@ -231,8 +231,12 @@ static void ICACHE_FLASH_ATTR upgrade_recvcb(void *arg, char *pusrdata, unsigned
 	
 	char *ptrData, *ptrLen, *ptr;
 	
+	char msg[50];
+	os_sprintf(msg, "Received %d bytes\r\n", length);
+	uart0_send(msg);
+
 	// first reply?
-	if (upgrade->totallength == 0) {
+	if (upgrade->sumlength == 0) {
 		//	valid http response?
 		if ((ptrLen = (char*)os_strstr(pusrdata, "Content-Length: ")) && (ptrData = (char*)os_strstr(ptrLen, "\r\n\r\n"))
 			&& (os_strncmp(pusrdata + 9, "200", 3) == 0)) {
@@ -241,16 +245,24 @@ static void ICACHE_FLASH_ATTR upgrade_recvcb(void *arg, char *pusrdata, unsigned
 			ptrData += 4;
 			// length of data after header in this chunk
 			length -= (ptrData - pusrdata);
+			os_sprintf(msg, "Header length: %d bytes| Data; %d bytes\r\n", ptrData - pusrdata, length);
+			uart0_send(msg);
 			// running total of download length
 			upgrade->totallength += length;
 			// process current chunk
-			write_flash((uint8*)ptrData, length);
+			if (length) {
+			    write_flash((uint8*)ptrData, length);
+			} else {
+			}
 			// work out total download size
 			ptrLen += 16;
 			ptr = (char *)os_strstr(ptrLen, "\r\n");
 			*ptr = '\0'; // destructive
 			upgrade->sumlength = atoi(ptrLen);
+			os_sprintf(msg, "Written data: %d byes| ROM size: %d bytes\r\n", upgrade->totallength, upgrade->sumlength);
+			uart0_send(msg);
 		} else {
+			uart0_send("Invalid HTTP response!\r\n");
 			// fail, not a valid http header/non-200 response/etc.
 			rboot_ota_deinit();
 			return;
@@ -259,6 +271,8 @@ static void ICACHE_FLASH_ATTR upgrade_recvcb(void *arg, char *pusrdata, unsigned
 		// not the first chunk, process it
 		upgrade->totallength += length;
 		write_flash((uint8*)pusrdata, length);
+		os_sprintf(msg, "Written data: %d byes| ROM size: %d bytes\r\n", upgrade->totallength, upgrade->sumlength);
+		uart0_send(msg);
 	}
 
 	// check if we are finished
