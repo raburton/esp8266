@@ -5,11 +5,11 @@ LIBS    = c gcc hal phy net80211 lwip wpa main pp
 CFLAGS  = -Os -g -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals  -D__ets__ -DICACHE_FLASH
 LDFLAGS = -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
 
-SDK_BASE   = c:/esp_iot_sdk_v1.0.0
+SDK_BASE   = c:/esp_iot_sdk_v1.1.1
 SDK_LIBDIR = lib
 SDK_INCDIR = include
 
-FW_TOOL       = D:/Projects/ESP8266/esptool2/Debug/esptool2.exe
+FW_TOOL       = D:/Projects/ESP8266/esptool2/Release/esptool2.exe
 FW_SECTS      = .text .data .rodata
 FW_USER_ARGS  = -quiet -bin -boot2
 

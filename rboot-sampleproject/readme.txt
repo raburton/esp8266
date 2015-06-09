@@ -9,6 +9,8 @@ To compile
 4) Put your SSID, password and OTA server IP in main.h
 4) If you haven't already compiled rBoot you'll need to do that too.
 
+Tested with SDK v1.1.1_15_06_05.
+
 All the above are available from GitHub: https://github.com/raburton/esp8266
 
 Once built simply flash with something like this:
