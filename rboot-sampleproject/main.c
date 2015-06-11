@@ -49,7 +49,7 @@ void ICACHE_FLASH_ATTR wifi_config_station() {
 	os_strcpy(&stationConf.ssid, SSID, os_strlen(SSID));
 	os_strcpy(&stationConf.password, PASS, os_strlen(PASS));
 	wifi_station_set_config(&stationConf);
-	uart0_send("init connecting...\r\n");
+	uart0_send("wifi connecting...\r\n");
 	wifi_station_connect();
 	os_timer_disarm(&network_timer);
 	os_timer_setfn(&network_timer, (os_timer_func_t *)network_wait_for_ip, NULL);
