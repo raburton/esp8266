@@ -119,13 +119,13 @@ bool WriteElfSection(MyElf_File *elf, FILE *outfile, char* name, bool headed,
 
 	debug("Adding section '%s', addr: 0x%08x, size: %d (+%d bytes(s) padding).\r\n",
 		name, sect->address, sect->size, pad);
-			
+	
 	// get elf section binary data
 	bindata = GetElfSectionData(elf, sect);
 	if (!bindata) {
 		goto end_function;
 	}
-			
+	
 	// write section (and pad if required)
 	if((headed && fwrite(&sechead, 1, sizeof(sechead), outfile) != sizeof(sechead))
 		|| fwrite(bindata, 1, sect->size, outfile) != sect->size
@@ -133,7 +133,7 @@ bool WriteElfSection(MyElf_File *elf, FILE *outfile, char* name, bool headed,
 		error("Error: Failed to write section '%s' to image file.\r\n", name);
 		goto end_function;
 	}
-		
+	
 	// include section data in the checksum
 	if(chksum) {
 		for(i = 0; i < (int)sechead.size; i++) {
