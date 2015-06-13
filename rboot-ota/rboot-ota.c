@@ -300,7 +300,7 @@ static void ICACHE_FLASH_ATTR upgrade_disconcb(void *arg) {
 	// must ensure disconnect was for this upgrade attempt,
 	// not a previous one! this call back is async so another
 	// upgrade struct may have been created already
-	if (upgrade && arg == upgrade->conn) {
+	if (upgrade && upgrade->conn == conn) {
 		// mark connection as gone
 		upgrade->conn = 0;
 		// end the update process
