@@ -156,13 +156,22 @@ static bool ICACHE_FLASH_ATTR rboot_ota_init(rboot_ota *ota) {
 	
 	// get details of rom slot to update
 	bootconf = rboot_get_config();
-	if ((ota->rom_slot > bootconf.count) || (bootconf.roms[ota->rom_slot] % 4)) {
-		uart0_send("Bad rom slot.\r\n");
-		os_free(upgrade);
-		return false;
+	if (ota->rom_slot == FLASH_BY_ADDR) {
+		if (ota->rom_addr % SECTOR_SIZE) {
+			uart0_send("Bad rom addr.\r\n");
+			os_free(upgrade);
+			return false;
+		}
+		upgrade->start_addr = ota->rom_addr;
+	} else {
+		if ((ota->rom_slot > bootconf.count) || (bootconf.roms[ota->rom_slot] % SECTOR_SIZE)) {
+			uart0_send("Bad rom slot.\r\n");
+			os_free(upgrade);
+			return false;
+		}
+		upgrade->start_addr = bootconf.roms[ota->rom_slot];
 	}
-	upgrade->start_addr = bootconf.roms[ota->rom_slot];
-	upgrade->start_sector = bootconf.roms[ota->rom_slot] / SECTOR_SIZE;
+	upgrade->start_sector = upgrade->start_addr / SECTOR_SIZE;
 	//upgrade->max_sector_count = 200;
 	
 	// create connection
@@ -288,7 +297,10 @@ static void ICACHE_FLASH_ATTR upgrade_disconcb(void *arg) {
 	// is upgrade struct still around?
 	// if so disconnect was from remote end, or we called
 	// ourselves to cleanup a failed connection attempt
-	if (upgrade) {
+	// must ensure disconnect was for this upgrade attempt,
+	// not a previous one! this call back is async so another
+	// upgrade struct may have been created already
+	if (upgrade && arg == upgrade->conn) {
 		// mark connection as gone
 		upgrade->conn = 0;
 		// end the update process

@@ -15,14 +15,17 @@
 #define UPGRADE_FLAG_START		0x01
 #define UPGRADE_FLAG_FINISH		0x02
 
+#define FLASH_BY_ADDR 0xff
+
 typedef void (*ota_callback)(void* server, bool result);
 
 typedef struct {
-	uint8 ip[4];
-	uint16 port;
-	uint8 *request;
-	uint8 rom_slot;
-	ota_callback callback;
+	uint8 ip[4];      // ota server ip
+	uint16 port;      // ota server port
+	uint8 *request;   // http request header
+	uint8 rom_slot;   // rom slot to update, or FLASH_BY_ADDR
+	uint32 rom_addr;  // address to flash when rom_slot==FLASH_BY_ADDR (otherwise ignored)
+	ota_callback callback;  // user callback when completed
 } rboot_ota;
 
 bool rboot_ota_start(rboot_ota *ota);

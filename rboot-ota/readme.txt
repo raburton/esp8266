@@ -35,11 +35,15 @@ the air updates (OTA):
         uint16 port;
         uint8 *request;
         uint8 rom_slot;
+        uint32 rom_addr;
         ota_callback callback;
     } rboot_ota;
     
     - ip is the ip of the OTA http server.
     - port is the server port (e.g. 80).
     - request is the http request to send.
-    - rom_slot is the rom slot to write to (numbered from zero).
+    - rom_slot is the rom slot to write to (numbered from zero), or set to
+      FLASH_BY_ADDR to flash by address instead of by rom slot.
+    - rom_addr is the flash address to write to when using FLASH_BY_ADDR,
+      otherwise it is ignored.
     - call back is the user code function to call on completion of OTA.
