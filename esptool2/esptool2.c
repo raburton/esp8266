@@ -136,7 +136,7 @@ bool WriteElfSection(MyElf_File *elf, FILE *outfile, char* name, bool headed,
 	
 	// include section data in the checksum
 	if(chksum) {
-		for(i = 0; i < (int)sechead.size; i++) {
+		for(i = 0; i < (int)sect->size; i++) {
 			*chksum ^= bindata[i];
 		}
 	}
