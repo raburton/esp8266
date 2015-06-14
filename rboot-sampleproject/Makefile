@@ -5,16 +5,20 @@ LIBS    = c gcc hal phy net80211 lwip wpa main pp
 CFLAGS  = -Os -g -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals  -D__ets__ -DICACHE_FLASH
 LDFLAGS = -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
 
-SDK_BASE   = c:/esp_iot_sdk_v1.1.1
+XTENSA_TOOLS_BINDIR ?= $(abspath ../../esp-open-sdk/xtensa-lx106-elf/bin)
+SDK_BASE	?= $(abspath ../../esp-open-sdk/sdk)
 SDK_LIBDIR = lib
 SDK_INCDIR = include
 
-FW_TOOL       = D:/Projects/ESP8266/esptool2/Release/esptool2.exe
+FW_TOOL       = $(abspath ../bin/esptool2)
 FW_SECTS      = .text .data .rodata
 FW_USER_ARGS  = -quiet -bin -boot2
 
-CC		:= xtensa-lx106-elf-gcc
-LD		:= xtensa-lx106-elf-gcc
+RBOOT_SRCDIR			= $(abspath ../rboot)
+RBOOT_OTA_SRCDIR	= $(abspath ../rboot-ota)
+
+CC		:= $(addprefix $(XTENSA_TOOLS_BINDIR)/,xtensa-lx106-elf-gcc)
+LD		:= $(addprefix $(XTENSA_TOOLS_BINDIR)/,xtensa-lx106-elf-gcc)
 
 SDK_LIBDIR	:= $(addprefix $(SDK_BASE)/,$(SDK_LIBDIR))
 SDK_INCDIR	:= $(addprefix -I$(SDK_BASE)/,$(SDK_INCDIR))
@@ -24,12 +28,16 @@ OBJ		:= $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRC))
 LIBS		:= $(addprefix -l,$(LIBS))
 
 .SECONDARY:
-.PHONY: all clean
+.PHONY: all extra clean
 
 C_FILES = $(wildcard *.c)
 O_FILES = $(patsubst %.c,$(BUILD_DIR)/%.o,$(C_FILES))
 
-all: $(BUILD_DIR) $(FIRMW_DIR) $(FIRMW_DIR)/rom0.bin $(FIRMW_DIR)/rom1.bin
+all: extra $(BUILD_DIR) $(FIRMW_DIR) $(FIRMW_DIR)/rom0.bin $(FIRMW_DIR)/rom1.bin
+
+extra:
+	@cp $(addprefix $(RBOOT_SRCDIR)/,rboot.h) .
+	@cp $(addprefix $(RBOOT_OTA_SRCDIR)/,rboot-ota.*) .
 
 $(BUILD_DIR)/%.o: %.c %.h
 	@echo "CC $<"
