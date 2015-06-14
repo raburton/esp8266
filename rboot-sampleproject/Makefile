@@ -1,31 +1,30 @@
 BUILD_DIR = build
 FIRMW_DIR = firmware
 
-LIBS    = c gcc hal phy net80211 lwip wpa main pp
-CFLAGS  = -Os -g -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals  -D__ets__ -DICACHE_FLASH
-LDFLAGS = -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
+ESPTOOL2			?= $(abspath ../bin/esptool2)
 
-XTENSA_TOOLS_BINDIR ?= $(abspath ../../esp-open-sdk/xtensa-lx106-elf/bin)
-SDK_BASE	?= $(abspath ../../esp-open-sdk/sdk)
-SDK_LIBDIR = lib
-SDK_INCDIR = include
+RBOOT_SRCDIR		?= $(abspath ../rboot)
+RBOOT_OTA_SRCDIR	?= $(abspath ../rboot-ota)
 
-FW_TOOL       = $(abspath ../bin/esptool2)
-FW_SECTS      = .text .data .rodata
-FW_USER_ARGS  = -quiet -bin -boot2
+XTENSA_BINDIR		?= $(abspath ../../esp-open-sdk/xtensa-lx106-elf/bin)
+SDK_BASE			?= $(abspath ../../esp-open-sdk/sdk)
+SDK_LIBDIR			?= $(addprefix $(SDK_BASE)/,$(SDK_LIBDIR))
+SDK_INCDIR			?= $(addprefix -I$(SDK_BASE)/,$(SDK_INCDIR))
 
-RBOOT_SRCDIR			= $(abspath ../rboot)
-RBOOT_OTA_SRCDIR	= $(abspath ../rboot-ota)
+FW_TOOL				?= $(ESPTOOL2)
+FW_SECTS			= .text .data .rodata
+FW_USER_ARGS		= -quiet -bin -boot2
 
-CC		:= $(addprefix $(XTENSA_TOOLS_BINDIR)/,xtensa-lx106-elf-gcc)
-LD		:= $(addprefix $(XTENSA_TOOLS_BINDIR)/,xtensa-lx106-elf-gcc)
+LIBS	= c gcc hal phy net80211 lwip wpa main pp
+CFLAGS	= -Os -g -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals	-D__ets__ -DICACHE_FLASH
+LDFLAGS	= -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
 
-SDK_LIBDIR	:= $(addprefix $(SDK_BASE)/,$(SDK_LIBDIR))
-SDK_INCDIR	:= $(addprefix -I$(SDK_BASE)/,$(SDK_INCDIR))
+CC		:= $(addprefix $(XTENSA_BINDIR)/,xtensa-lx106-elf-gcc)
+LD		:= $(addprefix $(XTENSA_BINDIR)/,xtensa-lx106-elf-gcc)
 
 SRC		:= $(wildcard *.c)
 OBJ		:= $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRC))
-LIBS		:= $(addprefix -l,$(LIBS))
+LIBS	:= $(addprefix -l,$(LIBS))
 
 .SECONDARY:
 .PHONY: all extra clean

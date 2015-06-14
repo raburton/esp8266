@@ -1,14 +1,12 @@
+XTENSA_BINDIR 	?= $(abspath ../../esp-open-sdk/xtensa-lx106-elf/bin)
+ESPTOOL2		?= $(abspath ../bin/esptool2)
 
-XTENSA_TOOLS_BINDIR ?= $(abspath ../../esp-open-sdk/xtensa-lx106-elf/bin)
+CFLAGS		= -Os -O3 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals	-D__ets__ -DICACHE_FLASH
+LDFLAGS		= -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
+LD_SCRIPT	= eagle.app.v6.ld
 
-CFLAGS = -Os -O3 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals  -D__ets__ -DICACHE_FLASH
-LDFLAGS = -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
-LD_SCRIPT = eagle.app.v6.ld
-
-CC		:= $(addprefix $(XTENSA_TOOLS_BINDIR)/,xtensa-lx106-elf-gcc)
-LD		:= $(addprefix $(XTENSA_TOOLS_BINDIR)/,xtensa-lx106-elf-gcc)
-
-ESPTOOL2 = $(abspath ../bin/esptool2)
+CC	:= $(addprefix $(XTENSA_BINDIR)/,xtensa-lx106-elf-gcc)
+LD	:= $(addprefix $(XTENSA_BINDIR)/,xtensa-lx106-elf-gcc)
 
 .SECONDARY:
 
