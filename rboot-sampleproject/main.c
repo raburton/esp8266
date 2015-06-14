@@ -18,9 +18,6 @@
 
 static os_timer_t network_timer;
 
-void ICACHE_FLASH_ATTR user_rf_pre_init(){
-}
-
 void ICACHE_FLASH_ATTR network_wait_for_ip() {
 
 	struct ip_info ipconfig;
