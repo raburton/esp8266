@@ -18,7 +18,7 @@
 
 static os_timer_t network_timer;
 
-void ICACHE_FLASH_ATTR user_rf_pre_init(){
+void ICACHE_FLASH_ATTR user_rf_pre_init() {
 }
 
 void ICACHE_FLASH_ATTR network_wait_for_ip() {
@@ -67,6 +67,28 @@ void ICACHE_FLASH_ATTR ShowIP() {
 		os_sprintf(msg, "network status: %d\r\n", wifi_station_get_connect_status());
 	}
 	uart0_send(msg);
+}
+
+void ICACHE_FLASH_ATTR ShowInfo() {
+	char msg[50];
+
+    os_sprintf(msg, "\r\nSDK: v%s\r\n", system_get_sdk_version());
+    uart0_send(msg);
+
+    os_sprintf(msg, "Free Heap: %d\r\n", system_get_free_heap_size());
+    uart0_send(msg);
+
+    os_sprintf(msg, "CPU Frequency: %d MHz\r\n", system_get_cpu_freq());
+    uart0_send(msg);
+
+    os_sprintf(msg, "System Chip ID: 0x%x\r\n", system_get_chip_id());
+    uart0_send(msg);
+
+    os_sprintf(msg, "SPI Flash ID: 0x%x\r\n", spi_flash_get_id());
+    uart0_send(msg);
+
+    os_sprintf(msg, "SPI Flash Size: %d\r\n", (1 << ((spi_flash_get_id() >> 16) & 0xff)));
+    uart0_send(msg);
 }
 
 void ICACHE_FLASH_ATTR Switch() {
@@ -149,6 +171,7 @@ void ICACHE_FLASH_ATTR ProcessCommand(char* str) {
 		uart0_send("  restart - restart the esp8266\r\n");
 		uart0_send("  switch - switch to the other rom and reboot\r\n");
 		uart0_send("  ota - perform ota update, switch rom and reboot\r\n");
+		uart0_send("  info - show esp8266 info\r\n");
 		uart0_send("\r\n");
 	} else if (!strcmp(str, "connect")) {
 		wifi_config_station();
@@ -161,6 +184,8 @@ void ICACHE_FLASH_ATTR ProcessCommand(char* str) {
 		OtaUpdate();
 	} else if (!strcmp(str, "ip")) {
 		ShowIP();
+	} else if (!strcmp(str, "info")) {
+		ShowInfo();
 	}
 }
 
