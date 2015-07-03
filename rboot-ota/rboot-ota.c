@@ -28,6 +28,8 @@ typedef struct {
 	struct espconn *conn;
 } upgrade_param;
 
+const char* ICACHE_FLASH_ATTR esp_errstr(sint8 err);
+
 static upgrade_param *upgrade;
 static os_timer_t ota_timer;
 
@@ -51,7 +53,7 @@ bool ICACHE_FLASH_ATTR rboot_set_config(rboot_config *conf) {
 	
 	buffer = (uint8*)os_malloc(SECTOR_SIZE);
 	if (!buffer) {
-		uart0_send("No ram!\r\n");
+		os_sprintf("No ram!\n");
 		return false;
 	}
 	
@@ -147,7 +149,7 @@ static bool ICACHE_FLASH_ATTR rboot_ota_init(rboot_ota *ota) {
 
 	upgrade = (upgrade_param*)os_zalloc(sizeof(upgrade_param));
 	if (!upgrade) {
-		uart0_send("No ram!\r\n");
+		os_sprintf("No ram!\n");
 		return false;
 	}
 	
@@ -158,14 +160,14 @@ static bool ICACHE_FLASH_ATTR rboot_ota_init(rboot_ota *ota) {
 	bootconf = rboot_get_config();
 	if (ota->rom_slot == FLASH_BY_ADDR) {
 		if (ota->rom_addr % SECTOR_SIZE) {
-			uart0_send("Bad rom addr.\r\n");
+			os_sprintf("Bad rom addr.\n");
 			os_free(upgrade);
 			return false;
 		}
 		upgrade->start_addr = ota->rom_addr;
 	} else {
 		if ((ota->rom_slot > bootconf.count) || (bootconf.roms[ota->rom_slot] % SECTOR_SIZE)) {
-			uart0_send("Bad rom slot.\r\n");
+			os_sprintf("Bad rom slot.\n");
 			os_free(upgrade);
 			return false;
 		}
@@ -177,7 +179,7 @@ static bool ICACHE_FLASH_ATTR rboot_ota_init(rboot_ota *ota) {
 	// create connection
 	upgrade->conn = (struct espconn *)os_zalloc(sizeof(struct espconn));
 	if (!upgrade->conn) {
-		uart0_send("No ram!\r\n");
+		os_sprintf("No ram!\n");
 		os_free(upgrade);
 		return false;
 	}
@@ -185,7 +187,7 @@ static bool ICACHE_FLASH_ATTR rboot_ota_init(rboot_ota *ota) {
 	if (!upgrade->conn->proto.tcp) {
 		os_free(upgrade->conn);
 		upgrade->conn = 0;
-		uart0_send("No ram!\r\n");
+		os_sprintf("No ram!\n");
 		os_free(upgrade);
 		return false;
 	}
@@ -260,7 +262,9 @@ static void ICACHE_FLASH_ATTR upgrade_recvcb(void *arg, char *pusrdata, unsigned
 			ptr = (char *)os_strstr(ptrLen, "\r\n");
 			*ptr = '\0'; // destructive
 			upgrade->content_len = atoi(ptrLen);
+			os_printf("OTA content length:%d.\n", upgrade->content_len);
 		} else {
+			os_sprintf("OTA unkown response\n");
 			// fail, not a valid http header/non-200 response/etc.
 			rboot_ota_deinit();
 			return;
@@ -269,6 +273,7 @@ static void ICACHE_FLASH_ATTR upgrade_recvcb(void *arg, char *pusrdata, unsigned
 		// not the first chunk, process it
 		upgrade->total_len += length;
 		write_flash((uint8*)pusrdata, length);
+		os_printf("OTA %7d/%7d %3d%%\n", upgrade->total_len, upgrade->content_len, upgrade->total_len * 100 / upgrade->content_len);
 	}
 	
 	// check if we are finished
@@ -285,6 +290,7 @@ static void ICACHE_FLASH_ATTR upgrade_recvcb(void *arg, char *pusrdata, unsigned
 // disconnect callback, clean up the connection
 // we also call this ourselves
 static void ICACHE_FLASH_ATTR upgrade_disconcb(void *arg) {
+	os_sprintf("OTA connection closed.\n");
 	// use passed ptr, as upgrade struct may have gone by now
 	struct espconn *conn = (struct espconn*)arg;
 	
@@ -311,6 +317,7 @@ static void ICACHE_FLASH_ATTR upgrade_disconcb(void *arg) {
 // successfully connected to update server, send the request
 static void ICACHE_FLASH_ATTR upgrade_connect_cb(void *arg) {
 	
+	os_sprintf("OTA connected.\n");
 	// disable the timeout
 	os_timer_disarm(&ota_timer);
 
@@ -326,7 +333,7 @@ static void ICACHE_FLASH_ATTR upgrade_connect_cb(void *arg) {
 
 // connection attempt timed out
 static void ICACHE_FLASH_ATTR connect_timeout_cb() {
-	uart0_send("Connect timeout.\r\n");
+	os_sprintf("Connect timeout.\n");
 	// not connected so don't call disconnect on the connection
 	// but call our own disconnect callback to do the cleanup
 	upgrade_disconcb(upgrade->conn);
@@ -334,7 +341,7 @@ static void ICACHE_FLASH_ATTR connect_timeout_cb() {
 
 // call back for lost connection
 static void ICACHE_FLASH_ATTR upgrade_recon_cb(void *arg, sint8 errType) {
-	uart0_send("Connection error.\r\n");
+	os_sprintf("Connection error %s\n", esp_errstr(errType));
 	// not connected so don't call disconnect on the connection
 	// but call our own disconnect callback to do the cleanup
 	upgrade_disconcb(upgrade->conn);
@@ -345,17 +352,19 @@ bool ICACHE_FLASH_ATTR rboot_ota_start(rboot_ota *ota) {
 	
 	// check not already updating
 	if (system_upgrade_flag_check() == UPGRADE_FLAG_START) {
+		os_sprintf("upgrade already started.\n");
 		return false;
 	}
 	
 	// check parameters
 	if (!ota || !ota->request) {
-		uart0_send("Invalid parameters.\r\n");
+		os_sprintf("Invalid parameters.\n");
 		return false;
 	}
 	
 	// set up update structure
 	if (!rboot_ota_init(ota)) {
+		os_sprintf("failed to init ota.\n");
 		return false;
 	}
 	
@@ -378,4 +387,31 @@ bool ICACHE_FLASH_ATTR rboot_ota_start(rboot_ota *ota) {
 	os_timer_arm(&ota_timer, 10000, 0);
 
 	return true;
+}
+
+const char* ICACHE_FLASH_ATTR esp_errstr(sint8 err) {
+	switch(err) {
+		case ESPCONN_OK:
+			return "No error, everything OK.";
+		case ESPCONN_MEM:
+			return "Out of memory error.";
+		case ESPCONN_TIMEOUT:
+			return "Timeout.";
+		case ESPCONN_RTE:
+			return "Routing problem.";
+		case ESPCONN_INPROGRESS:
+			return	"Operation in progress";
+		case ESPCONN_ABRT:
+			return	"Connection aborted.";
+		case ESPCONN_RST:
+			return	"Connection reset.";
+		case ESPCONN_CLSD:
+			return   "Connection closed.";
+		case ESPCONN_CONN:
+			return   "Not connected.";
+		case ESPCONN_ARG:
+			return   "Illegal argument.";
+		case ESPCONN_ISCONN:
+			return   "Already connected.";
+	}
 }
