@@ -320,7 +320,7 @@ static void ICACHE_FLASH_ATTR upgrade_connect_cb(void *arg) {
 
 	// send the http request, with timeout for reply and rest of update to complete
 	os_timer_setfn(&ota_timer, (os_timer_func_t *)rboot_ota_deinit, 0);
-	os_timer_arm(&ota_timer, 10000, 0);
+	os_timer_arm(&ota_timer, OTA_DOWNLOAD_TIMEOUT, 0);
 	espconn_sent(upgrade->conn, upgrade->ota->request, os_strlen((char*)upgrade->ota->request));
 }
 
@@ -375,7 +375,7 @@ bool ICACHE_FLASH_ATTR rboot_ota_start(rboot_ota *ota) {
 	// set connection timeout timer
 	os_timer_disarm(&ota_timer);
 	os_timer_setfn(&ota_timer, (os_timer_func_t *)connect_timeout_cb, 0);
-	os_timer_arm(&ota_timer, 10000, 0);
+	os_timer_arm(&ota_timer, OTA_CONNECT_TIMEOUT, 0);
 
 	return true;
 }

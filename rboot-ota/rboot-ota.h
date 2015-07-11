@@ -11,6 +11,12 @@
 
 #include "rboot.h"
 
+// timeout for the initial connect (in ms)
+#define OTA_CONNECT_TIMEOUT  10000
+
+// timeout for the download and flash to complete (in ms), once connected
+#define OTA_DOWNLOAD_TIMEOUT 20000
+
 #define UPGRADE_FLAG_IDLE		0x00
 #define UPGRADE_FLAG_START		0x01
 #define UPGRADE_FLAG_FINISH		0x02
