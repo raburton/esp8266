@@ -3,11 +3,10 @@
 # https://github.com/raburton/esp8266
 #
 
-ESPTOOL2 ?= D:/Projects/esp8266/esptool2/Release/esptool2.exe
+ESPTOOL2 ?= ../esptool2/esptool2
 
-XTENSA_BINDIR ?= C:/xtensa-lx106-elf/bin
-CC := $(addprefix $(XTENSA_BINDIR)/,xtensa-lx106-elf-gcc)
-LD := $(addprefix $(XTENSA_BINDIR)/,xtensa-lx106-elf-gcc)
+CC := xtensa-lx106-elf-gcc
+LD := xtensa-lx106-elf-gcc
 
 CFLAGS    = -Os -O3 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals  -D__ets__ -DICACHE_FLASH
 LDFLAGS   = -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static

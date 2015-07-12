@@ -7,13 +7,12 @@ SDK_BASE   ?= C:/esp_iot_sdk_v1.1.1
 SDK_LIBDIR  = lib
 SDK_INCDIR  = include
 
-ESPTOOL2     ?= D:/Projects/esp8266/esptool2/Release/esptool2.exe
+ESPTOOL2     ?= ../esptool2/esptool2
 FW_SECTS      = .text .data .rodata
 FW_USER_ARGS  = -quiet -bin -boot2
 
-XTENSA_BINDIR ?= C:/xtensa-lx106-elf/bin
-CC := $(addprefix $(XTENSA_BINDIR)/,xtensa-lx106-elf-gcc)
-LD := $(addprefix $(XTENSA_BINDIR)/,xtensa-lx106-elf-gcc)
+CC := xtensa-lx106-elf-gcc
+LD := xtensa-lx106-elf-gcc
 
 BUILD_DIR = build
 FIRMW_DIR = firmware
