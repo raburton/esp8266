@@ -38,7 +38,7 @@ O_FILES = $(patsubst %.c,$(BUILD_DIR)/%.o,$(C_FILES)) $(BUILD_DIR)/rboot-ota.o
 
 all: $(BUILD_DIR) $(FIRMW_DIR) $(FIRMW_DIR)/rom0.bin $(FIRMW_DIR)/rom1.bin
 
-$(BUILD_DIR)/rboot-ota.o: ../rboot-ota/rboot-ota.c ../rboot-ota/rboot-ota.h
+$(BUILD_DIR)/rboot-ota.o: $(ESP8266_BASE)/rboot-ota/rboot-ota.c $(ESP8266_BASE)/rboot-ota/rboot-ota.h
 	@echo "CC $<"
 	@$(CC) -I$(ESP8266_BASE)/rboot -I$(ESP8266_BASE)/rboot-ota -I. $(SDK_INCDIR) $(CFLAGS) -o $@ -c $<
 
