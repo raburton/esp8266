@@ -28,7 +28,7 @@ rboot:
 
 rboot-sampleproject:
 	@echo "Building rBoot sample project"
-	$(MAKE) -Crboot-sampleproject
+	@$(MAKE) -Crboot-sampleproject
 
 clean:
 	@$(MAKE) -Cesptool2 clean
