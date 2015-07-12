@@ -3,11 +3,13 @@
 # https://github.com/raburton/esp8266
 #
 
+ESP8266_BASE = ..
+
 SDK_BASE   ?= C:/esp_iot_sdk_v1.1.1
 SDK_LIBDIR  = lib
 SDK_INCDIR  = include
 
-ESPTOOL2     ?= ../esptool2/esptool2
+ESPTOOL2     ?= $(ESP8266_BASE)/esptool2/esptool2
 FW_SECTS      = .text .data .rodata
 FW_USER_ARGS  = -quiet -bin -boot2
 
@@ -32,13 +34,17 @@ LIBS		:= $(addprefix -l,$(LIBS))
 .PHONY: all clean
 
 C_FILES = $(wildcard *.c)
-O_FILES = $(patsubst %.c,$(BUILD_DIR)/%.o,$(C_FILES))
+O_FILES = $(patsubst %.c,$(BUILD_DIR)/%.o,$(C_FILES)) $(BUILD_DIR)/rboot-ota.o
 
 all: $(BUILD_DIR) $(FIRMW_DIR) $(FIRMW_DIR)/rom0.bin $(FIRMW_DIR)/rom1.bin
 
+$(BUILD_DIR)/rboot-ota.o: ../rboot-ota/rboot-ota.c ../rboot-ota/rboot-ota.h
+	@echo "CC $<"
+	@$(CC) -I$(ESP8266_BASE)/rboot -I$(ESP8266_BASE)/rboot-ota -I. $(SDK_INCDIR) $(CFLAGS) -o $@ -c $<
+
 $(BUILD_DIR)/%.o: %.c %.h
 	@echo "CC $<"
-	@$(CC) -I. $(SDK_INCDIR) $(CFLAGS) -o $@ -c $<
+	@$(CC) -I$(ESP8266_BASE)/rboot -I$(ESP8266_BASE)/rboot-ota -I. $(SDK_INCDIR) $(CFLAGS) -o $@ -c $<
 
 $(BUILD_DIR)/%.elf: $(O_FILES)
 	@echo "LD $(notdir $@)"

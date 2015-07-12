@@ -26,16 +26,7 @@ rboot:
 	@echo "Building rBoot boot loader"
 	@$(MAKE) -Crboot
 
-rboot-sampleproject/rboot.h: rboot/rboot.h
-	@cp $< $@
-
-rboot-sampleproject/rboot-ota.h: rboot-ota/rboot-ota.h
-	@cp $< $@
-
-rboot-sampleproject/rboot-ota.c: rboot-ota/rboot-ota.c
-	@cp $< $@
-
-rboot-sampleproject: rboot-sampleproject/rboot.h rboot-sampleproject/rboot-ota.h rboot-sampleproject/rboot-ota.c
+rboot-sampleproject:
 	@echo "Building rBoot sample project"
 	$(MAKE) -Crboot-sampleproject
 
