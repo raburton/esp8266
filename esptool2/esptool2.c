@@ -494,7 +494,7 @@ int main(int argc, char *argv[]) {
 		print("        spi size (kb): -256 -512 -1024 -2048 -4096 (default -512)\r\n");
 		print("        spi mode: -qio -qout -dio -dout (default -qio)\r\n");
 		print("        spi speed: -20 -26.7 -40 -80 (default -40)\r\n");
-		//print("        include sdk lib in checksum: -iromchksum (requires special rBoot)\r\n");
+		print("        include irom in checksum: -iromchksum (also needs enabling in rBoot)\r\n");
 		print("\r\n");
 		print("General options:\r\n");
 		print("  -quiet prints only error messages\r\n");
