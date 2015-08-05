@@ -1,5 +1,5 @@
 #ifndef __RBOOT_OTA_H__
-#define __RBOOTOTA_H__
+#define __RBOOT_OTA_H__
 
 //////////////////////////////////////////////////
 // API for OTA and rBoot config, for ESP8266.
