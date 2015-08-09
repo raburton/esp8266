@@ -21,7 +21,7 @@ A simple C application to demonstrate the rBoot OTA API.
 
 esptool2
 -
-A firmware tool to produce rom images for the ESP8266. Needs no external tools needs to extract the ELF file. Can produce standalone rom images and images for use with SDK and rBoot bootloaders. rBoot build depends on esptool2.
+A firmware tool to produce rom images for the ESP8266. Needs no external tools to extract the ELF file. Can produce standalone rom images and images for use with SDK and rBoot bootloaders. rBoot build depends on esptool2.
 
 Drivers
 -
@@ -32,7 +32,7 @@ Drivers for:
 
 NTP
 -
-Simple NTP client for ESP8266, and very simple timezone code example.
+Simple NTP client for ESP8266 and very simple timezone code example.
 
 Mutex
 -
