@@ -14,9 +14,9 @@
 # `clean` run clean on esptool2, rboot, and rboot-sampleproject with inherited
 #				 configuration
 
-ESPTOOL2      ?= $(abspath esptool2/esptool2.exe)
+ESPTOOL2      ?= $(abspath esptool2/esptool2)
 SDK_BASE      ?= C:/esp_iot_sdk_v1.3.0
-# XTENSA_BINDIR needs trailing slash
+# XTENSA_BINDIR needs trailing slash or can be blank if already in $PATH
 XTENSA_BINDIR ?= C:/xtensa-lx106-elf/bin/
 
 export
@@ -27,11 +27,11 @@ all: esptool2 rboot rboot-sampleproject
 
 esptool2:
 	@echo "Building esptool2 firmware tool"
-	@cd esptool2 && $(MAKE)
+	@$(MAKE) -C esptool2
 
 rboot:
 	@echo "Building rBoot boot loader"
-	@cd rboot && $(MAKE)
+	@$(MAKE) -C rboot
 
 rboot-sampleproject/rboot.h: rboot/rboot.h
 	@cp $< $@
@@ -44,9 +44,9 @@ rboot-sampleproject/rboot-ota.c: rboot-ota/rboot-ota.c
 
 rboot-sampleproject: rboot-sampleproject/rboot.h rboot-sampleproject/rboot-ota.h rboot-sampleproject/rboot-ota.c
 	@echo "Building rBoot sample project"
-	@cd rboot-sampleproject && $(MAKE)
+	@$(MAKE) -C rboot-sampleproject
 
 clean:
-	@cd esptool2 && $(MAKE) clean
-	@cd rboot && $(MAKE) clean
-	@cd rboot-sampleproject && $(MAKE) clean
+	@$(MAKE) -C esptool2 clean
+	@$(MAKE) -C rboot clean
+	@$(MAKE) -C rboot-sampleproject clean

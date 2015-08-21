@@ -3,7 +3,7 @@
 # https://github.com/raburton/esp8266
 #
 
-CFLAGS = -O2
+CFLAGS = -O2 -Wall
 CC = gcc
 LD = gcc
 
