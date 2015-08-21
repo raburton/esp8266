@@ -3,7 +3,7 @@
 # https://github.com/raburton/esp8266
 #
 
-SDK_BASE   ?= C:/esp_iot_sdk_v1.1.1
+SDK_BASE   ?= C:/esp_iot_sdk_v1.3.0
 SDK_LIBDIR  = lib
 SDK_INCDIR  = include
 
@@ -11,9 +11,10 @@ ESPTOOL2     ?= D:/Projects/esp8266/esptool2/Release/esptool2.exe
 FW_SECTS      = .text .data .rodata
 FW_USER_ARGS  = -quiet -bin -boot2
 
-XTENSA_BINDIR ?= C:/xtensa-lx106-elf/bin
-CC := $(addprefix $(XTENSA_BINDIR)/,xtensa-lx106-elf-gcc)
-LD := $(addprefix $(XTENSA_BINDIR)/,xtensa-lx106-elf-gcc)
+# XTENSA_BINDIR needs trailing slash
+XTENSA_BINDIR ?= C:/xtensa-lx106-elf/bin/
+CC := $(addprefix $(XTENSA_BINDIR),xtensa-lx106-elf-gcc)
+LD := $(addprefix $(XTENSA_BINDIR),xtensa-lx106-elf-gcc)
 
 BUILD_DIR = build
 FIRMW_DIR = firmware

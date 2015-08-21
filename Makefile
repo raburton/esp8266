@@ -15,8 +15,9 @@
 #				 configuration
 
 ESPTOOL2      ?= $(abspath esptool2/esptool2.exe)
-SDK_BASE      ?= C:/esp_iot_sdk_v1.1.2
-XTENSA_BINDIR ?= C:/xtensa-lx106-elf/bin
+SDK_BASE      ?= C:/esp_iot_sdk_v1.3.0
+# XTENSA_BINDIR needs trailing slash
+XTENSA_BINDIR ?= C:/xtensa-lx106-elf/bin/
 
 export
 
