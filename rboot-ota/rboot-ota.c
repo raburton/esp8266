@@ -239,6 +239,9 @@ static void ICACHE_FLASH_ATTR rboot_ota_deinit() {
 static void ICACHE_FLASH_ATTR upgrade_recvcb(void *arg, char *pusrdata, unsigned short length) {
 	
 	char *ptrData, *ptrLen, *ptr;
+
+	// disarm the timer
+	os_timer_disarm(&ota_timer);
 	
 	// first reply?
 	if (upgrade->content_len == 0) {
@@ -279,6 +282,10 @@ static void ICACHE_FLASH_ATTR upgrade_recvcb(void *arg, char *pusrdata, unsigned
 	} else if (upgrade->conn->state != ESPCONN_READ) {
 		// fail, but how do we get here? premature end of stream?
 		rboot_ota_deinit();
+	} else {
+		// timer for next recv
+		os_timer_setfn(&ota_timer, (os_timer_func_t *)rboot_ota_deinit, 0);
+		os_timer_arm(&ota_timer, OTA_DOWNLOAD_TIMEOUT, 0);
 	}
 }
 
@@ -318,7 +325,7 @@ static void ICACHE_FLASH_ATTR upgrade_connect_cb(void *arg) {
 	espconn_regist_disconcb(upgrade->conn, upgrade_disconcb);
 	espconn_regist_recvcb(upgrade->conn, upgrade_recvcb);
 
-	// send the http request, with timeout for reply and rest of update to complete
+	// send the http request, with timeout for reply
 	os_timer_setfn(&ota_timer, (os_timer_func_t *)rboot_ota_deinit, 0);
 	os_timer_arm(&ota_timer, OTA_DOWNLOAD_TIMEOUT, 0);
 	espconn_sent(upgrade->conn, upgrade->ota->request, os_strlen((char*)upgrade->ota->request));
@@ -332,9 +339,37 @@ static void ICACHE_FLASH_ATTR connect_timeout_cb() {
 	upgrade_disconcb(upgrade->conn);
 }
 
+static const char* ICACHE_FLASH_ATTR esp_errstr(sint8 err) {
+	switch(err) {
+		case ESPCONN_OK:
+			return "No error, everything OK.\r\n";
+		case ESPCONN_MEM:
+			return "Out of memory error.\r\n";
+		case ESPCONN_TIMEOUT:
+			return "Timeout.\r\n";
+		case ESPCONN_RTE:
+			return "Routing problem.\r\n";
+		case ESPCONN_INPROGRESS:
+			return "Operation in progress.\r\n";
+		case ESPCONN_ABRT:
+			return "Connection aborted.\r\n";
+		case ESPCONN_RST:
+			return "Connection reset.\r\n";
+		case ESPCONN_CLSD:
+			return "Connection closed.\r\n";
+		case ESPCONN_CONN:
+			return "Not connected.\r\n";
+		case ESPCONN_ARG:
+			return "Illegal argument.\r\n";
+		case ESPCONN_ISCONN:
+			return "Already connected.\r\n";
+	}
+}
+
 // call back for lost connection
 static void ICACHE_FLASH_ATTR upgrade_recon_cb(void *arg, sint8 errType) {
-	uart0_send("Connection error.\r\n");
+	uart0_send("Connection error: ");
+	uart0_send(esp_errstr(errType));
 	// not connected so don't call disconnect on the connection
 	// but call our own disconnect callback to do the cleanup
 	upgrade_disconcb(upgrade->conn);
