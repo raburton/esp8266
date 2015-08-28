@@ -19,6 +19,10 @@ rBoot-sampleproject
 -
 A simple C application to demonstrate the rBoot OTA API.
 
+rBoot-smingsample
+-
+A simple Sming (C++) application to demonstrate the rBoot OTA API, big flash and spiffs.
+
 esptool2
 -
 A firmware tool to produce rom images for the ESP8266. Needs no external tools to extract the ELF file. Can produce standalone rom images and images for use with SDK and rBoot bootloaders. rBoot build depends on esptool2.
