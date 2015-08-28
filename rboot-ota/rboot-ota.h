@@ -11,6 +11,10 @@
 
 #include "rboot.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // timeout for the initial connect (in ms)
 #define OTA_CONNECT_TIMEOUT  10000
 
@@ -39,5 +43,9 @@ rboot_config rboot_get_config();
 bool rboot_set_config(rboot_config *conf);
 uint8 rboot_get_current_rom();
 bool rboot_set_current_rom(uint8 rom);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
