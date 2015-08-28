@@ -125,6 +125,12 @@ void serialCallBack(Stream& stream, char arrivedChar, unsigned short availableCh
 			for (unsigned int i = 0; i < files.count(); i++) {
 				Serial.println(files[i]);
 			}
+		} else if (!strcmp(str, "cat")) {
+			Vector<String> files = fileList();
+			Serial.printf("dumping file %s:\r\n", files[0].c_str());
+			if (files.count() > 0) {
+				Serial.println(fileGetContent(files[0]));
+			}
 		} else if (!strcmp(str, "info")) {
 			ShowInfo();
 		} else if (!strcmp(str, "help")) {
@@ -138,6 +144,7 @@ void serialCallBack(Stream& stream, char arrivedChar, unsigned short availableCh
 			Serial.println("  ota - perform ota update, switch rom and reboot");
 			Serial.println("  info - show esp8266 info");
 			Serial.println("  ls - list files in spiffs");
+			Serial.println("  cat - show first file in spiffs");
 			Serial.println();
 		} else {
 			Serial.println("unknown command");

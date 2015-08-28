@@ -12,26 +12,33 @@ want to use big flash support at all see the separate instructions below.
 
 Building
 --------
-0) Patch and compile sming, patch available here:
-   http://www.esp8266.com/viewtopic.php?f=35&t=4288&p=26914#p26914
-1) Edit Sming/appinit/user_main.cpp and comment out "spiffs_mount();"
-2) Copy rboot.h (the version you used to build rBoot) & rboot-ota.h to the
-   include directory.
-3) Copy rboot-bigflash.c & rboot-smingota.c to app directory.
-4) Set ESP_HOME & SMING_HOME, as environment variables or edit the Makefile, as
-   you would for general Sming compiling.
-5) Set ESPTOOL2 (env var or in the Makefile) to point to the esptool2 binary.
-6) Edit the OTA ip address (ota_ip) at the top of application.cpp to point to
-   your OTA webserver.
-7) Set WIFI_SSID & WIFI_PWD environment variable with your wifi details.
-8) make
-9) Put rom0.bin in the root of your webserver.
+ 0) Patch and compile sming, patch available here:
+    http://www.esp8266.com/viewtopic.php?f=35&t=4288&p=26914#p26914
+ 1) Edit Sming/appinit/user_main.cpp and comment out "spiffs_mount();"
+ 2) Copy rboot.h (the version you used to build rBoot) & rboot-ota.h to the
+    include directory.
+ 3) Copy rboot-bigflash.c & rboot-smingota.c to app directory.
+ 4) Set ESP_HOME & SMING_HOME, as environment variables or edit the Makefile, as
+    you would for general Sming compiling.
+ 5) Set ESPTOOL2 (env var or in the Makefile) to point to the esptool2 binary.
+ 6) Edit the OTA ip address (ota_ip) at the top of application.cpp to point to
+    your OTA webserver.
+ 7) Set WIFI_SSID & WIFI_PWD environment variable with your wifi details.
+ 8) make
+ 9) Create spiffs filesystem (currently a manual step, tested at length 0x30000).
+10) Flash rom and spiffs (see below).
+11) Put rom0.bin in the root of your webserver for OTA.
 
 Flashing
 --------
-Use esptool.py:
+Use esptool.py to flash rBoot, rom & spiffs:
   esptool.py --port <port> write_flash -fs 32m 0x00000 rboot.bin 0x02000 rom0.bin
-You can also flash rom0.bin to 0x2002000, but booting and using OTA is quicker!
+    0x50000 spiffs.rom
+
+You can also flash rom0.bin to 0x202000, but booting and using OTA is quicker! At
+the moment OTA for spiffs is't implemented so you'll need to manually flash the
+spiffs for the second rom to 0x0x250000, or an empty one will be created and
+formatted when the second rom first boots.
 
 Disabling big flash
 -------------------
