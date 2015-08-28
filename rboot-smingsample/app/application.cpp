@@ -127,9 +127,11 @@ void serialCallBack(Stream& stream, char arrivedChar, unsigned short availableCh
 			}
 		} else if (!strcmp(str, "cat")) {
 			Vector<String> files = fileList();
-			Serial.printf("dumping file %s:\r\n", files[0].c_str());
 			if (files.count() > 0) {
+				Serial.printf("dumping file %s:\r\n", files[0].c_str());
 				Serial.println(fileGetContent(files[0]));
+			} else {
+				Serial.println("Empty spiffs!");
 			}
 		} else if (!strcmp(str, "info")) {
 			ShowInfo();
@@ -158,9 +160,9 @@ void init() {
 
 	int slot = rboot_get_current_rom();
 	if (slot == 0) {
-		spiffs_mount_manual(0x40250000, 0x30000);
+		spiffs_mount_manual(0x40300000, 0x70000);
 	} else {
-		spiffs_mount_manual(0x40450000, 0x30000);
+		spiffs_mount_manual(0x40500000, 0x70000);
 	}
 	
 	// disable access point

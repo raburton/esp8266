@@ -24,7 +24,7 @@ Building
     your OTA webserver.
  6) Set WIFI_SSID & WIFI_PWD environment variable with your wifi details.
  7) make
- 8) Create spiffs filesystem (currently a manual step, tested at length 0x30000).
+ 8) Create spiffs filesystem (currently a manual step, length up to 0x70000).
  9) Flash rom and spiffs (see below).
 10) Put rom0.bin in the root of your webserver for OTA.
 
@@ -32,22 +32,25 @@ Flashing
 --------
 Use esptool.py to flash rBoot, rom & spiffs:
  esptool.py --port <port> write_flash -fs 32m 0x00000 rboot.bin 0x02000 rom0.bin
-   0x50000 spiffs.rom
+   0x100000 spiffs.rom
 
 You can also flash rom0.bin to 0x202000, but booting and using OTA is quicker!
-At the moment OTA for spiffs is't implemented so you'll need to manually flash
-the spiffs for the second rom to 0x0x250000, or an empty one will be created and
-formatted when the second rom first boots.
+At the moment OTA for spiffs isn't implemented so you'll need to manually flash
+the spiffs for the second rom to 0x300000 (or an empty one will be created and
+formatted when the second rom first boots).
 
 Notes
 -----
+spiffs_mount_manual(address, length) must be called from init. The address must
+be 0x40200000 + physical flash address. It does not use memory mapped flash, so
+the reason for strang addressing this is not clear.
+
 Important compiler flags used:
 DISABLE_SPIFFS - doesn't disable spiffs, but prevents automounting at the wrong
   location (Sming/appinit/user_main.cpp). Instead we call spiffs_mount_manual
   from init.
 RBOOT_BUILD_SMING - ensures big flash support function is correcly marked to
   remain in iram (plus potentially other sming specific code in future).
-
 
 Disabling big flash
 -------------------
