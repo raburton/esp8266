@@ -25,7 +25,7 @@ USER_LIBDIRS = $(SMING_HOME)/compiler/lib/ $(BUILD_BASE)
 LIBS		= microc microgcc hal phy pp net80211 lwip wpa main2 sming $(EXTRA_LIBS)
 
 # compiler flags using during compilation of source files
-CFLAGS		= -Os -g -Wpointer-arith -Wundef -Werror -Wl,-EL -nostdlib -mlongcalls -mtext-section-literals -finline-functions -fdata-sections -ffunction-sections -D__ets__ -DICACHE_FLASH -DARDUINO=106 -DSMING
+CFLAGS		= -Os -g -Wpointer-arith -Wundef -Werror -Wl,-EL -nostdlib -mlongcalls -mtext-section-literals -finline-functions -fdata-sections -ffunction-sections -D__ets__ -DICACHE_FLASH -DARDUINO=106 -DRBOOT_BUILD_SMING -DDISABLE_SPIFFS
 CXXFLAGS	= $(CFLAGS) -fno-rtti -fno-exceptions -std=c++11 -felide-constructors
 
 # linker flags used to generate the main object file
