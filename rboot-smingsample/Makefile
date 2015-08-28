@@ -39,8 +39,7 @@ LD_SCRIPT_1 = rom1.ld
 SDK_LIBDIR	= lib
 SDK_INCDIR	= include
 
-# we create two different files for uploading into the flash
-# these are the names and options to generate them
+# filenames and options for generating rom images with esptool2
 FW_SECTS = .text .data .rodata
 FW_USER_ARGS = -quiet -bin -boot2
 FW_ROM0 = rom0
@@ -95,7 +94,7 @@ USER_LIBDIRS := $(addprefix -L,$(USER_LIBDIRS))
 FW_ROM0	:= $(addprefix $(FW_BASE)/,$(FW_ROM0).bin)
 FW_ROM1	:= $(addprefix $(FW_BASE)/,$(FW_ROM1).bin)
 
-# we will use global WiFi settings from Eclipse Environment Variables, if possible
+# use wifi settings from environment, no need to hard code in your code
 WIFI_SSID ?= ""
 WIFI_PWD ?= ""
 ifneq ($(WIFI_SSID), "")

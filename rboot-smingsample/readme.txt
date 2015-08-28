@@ -14,9 +14,9 @@ Building
 --------
  0) Patch and compile sming, patch available here:
     http://www.esp8266.com/viewtopic.php?f=35&t=4288&p=26914#p26914
- 1) Copy rboot.h (the version you used to build rBoot) & rboot-ota.h to the
-    include directory.
- 2) Copy rboot-bigflash.c & rboot-smingota.c to app directory.
+ 1) Copy or symlink rboot.h (the version you used to build rBoot) & rboot-ota.h
+    to the include directory.
+ 2) Copy or symlink rboot-bigflash.c & rboot-smingota.c to the app directory.
  3) Set ESP_HOME & SMING_HOME, as environment variables or edit the Makefile, as
     you would for general Sming compiling.
  4) Set ESPTOOL2 (env var or in the Makefile) to point to the esptool2 binary.
