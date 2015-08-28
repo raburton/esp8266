@@ -27,6 +27,12 @@ Building
 8) make
 9) Put rom0.bin in the root of your webserver.
 
+Flashing
+--------
+Use esptool.py:
+  esptool.py --port <port> write_flash -fs 32m 0x00000 rboot.bin 0x02000 rom0.bin
+You can also flash rom0.bin to 0x2002000, but booting and using OTA is quicker!
+
 Disabling big flash
 -------------------
 This assumes you understand the concepts explained in the rBoot readme about
