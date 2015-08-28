@@ -1,17 +1,20 @@
 # name for the target project
 TARGET = app
 
-# Default SMING_HOME. Can be overriden.
+# default SMING_HOME, can be overridden
 SMING_HOME ?= /opt/Sming/Sming
-# Default ESP_HOME. Can be overriden.
+# default ESP_HOME, can be overridden
 ESP_HOME ?= /opt/esp-open-sdk
-# Path to esptool2. Can be overriden.
+# sdk path, can be overridden
+SDK_BASE ?= $(ESP_HOME)/sdk
+# path to esptool2, can be overridden
 ESPTOOL2 ?= ../esptool2/esptool2
 
-SDK_BASE ?= $(ESP_HOME)/sdk
+# use wifi settings from environment or hard code them here
+WIFI_SSID ?= ""
+WIFI_PWD ?= ""
 
-# Output directories to store intermediate compiled files
-# relative to the project directory
+# output directories
 BUILD_BASE	= build
 FW_BASE		= firmware
 
@@ -22,7 +25,7 @@ EXTRA_INCDIR    ?= include $(SMING_HOME)/include $(SMING_HOME)/ $(SMING_HOME)/sy
 
 # libraries used in this project, mainly provided by the SDK
 USER_LIBDIRS = $(SMING_HOME)/compiler/lib/ $(BUILD_BASE)
-LIBS		= microc microgcc hal phy pp net80211 lwip wpa main2 sming $(EXTRA_LIBS)
+LIBS		 = microc microgcc hal phy pp net80211 lwip wpa main2 sming $(EXTRA_LIBS)
 
 # compiler flags using during compilation of source files
 CFLAGS		= -Os -g -Wpointer-arith -Wundef -Werror -Wl,-EL -nostdlib -mlongcalls -mtext-section-literals -finline-functions -fdata-sections -ffunction-sections -D__ets__ -DICACHE_FLASH -DARDUINO=106 -DRBOOT_BUILD_SMING -DDISABLE_SPIFFS
@@ -42,8 +45,8 @@ SDK_INCDIR	= include
 # filenames and options for generating rom images with esptool2
 FW_SECTS = .text .data .rodata
 FW_USER_ARGS = -quiet -bin -boot2
-FW_ROM0 = rom0
-FW_ROM1 = rom1
+FW_ROM_0 = rom0
+FW_ROM_1 = rom1
 
 export COMPILE := gcc
 export PATH := $(ESP_HOME)/xtensa-lx106-elf/bin:$(PATH)
@@ -69,13 +72,9 @@ SDK_INCDIR	:= $(addprefix -I$(SDK_BASE)/,$(SDK_INCDIR))
 LIBMAIN = $(addprefix $(SDK_LIBDIR)/,libmain.a)
 LIBMAIN2 = $(addprefix $(BUILD_BASE)/,libmain2.a)
 
-#SRC		:= $(foreach sdir,$(SRC_DIR),$(wildcard $(sdir)/*.cpp))
-#OBJ		:= $(patsubst %.cpp,$(BUILD_BASE)/%.o,$(SRC))
-
 SRC := $(foreach sdir,$(SRC_DIR),$(wildcard $(sdir)/*.c*))
 OBJ := $(patsubst %.c,$(BUILD_BASE)/%.o,$(SRC))
 OBJ := $(patsubst %.cpp,$(BUILD_BASE)/%.o,$(OBJ))
-#OBJ := $(patsubst %.o,$(BUILD_BASE)/%.o,$(OBJ))
 
 LIBS		:= $(addprefix -l,$(LIBS))
 APP_AR		:= $(addprefix $(BUILD_BASE)/,$(TARGET)_app.a)
@@ -91,12 +90,9 @@ EXTRA_INCDIR	:= $(addprefix -I,$(EXTRA_INCDIR))
 
 USER_LIBDIRS := $(addprefix -L,$(USER_LIBDIRS))
 
-FW_ROM0	:= $(addprefix $(FW_BASE)/,$(FW_ROM0).bin)
-FW_ROM1	:= $(addprefix $(FW_BASE)/,$(FW_ROM1).bin)
+FW_ROM_0	:= $(addprefix $(FW_BASE)/,$(FW_ROM_0).bin)
+FW_ROM_1	:= $(addprefix $(FW_BASE)/,$(FW_ROM_1).bin)
 
-# use wifi settings from environment, no need to hard code in your code
-WIFI_SSID ?= ""
-WIFI_PWD ?= ""
 ifneq ($(WIFI_SSID), "")
 	CFLAGS += -DWIFI_SSID=\"$(WIFI_SSID)\"
 endif
@@ -119,19 +115,19 @@ endef
 .PHONY: all checkdirs clean
 
 # single rom image for rBoot big flash support and 1mb slots
-all: checkdirs $(LIBMAIN2) $(FW_ROM0)
+all: checkdirs $(LIBMAIN2) $(FW_ROM_0)
 # dual rom images for rBoot without big flash support and/or two smaller rom slots
-#all: checkdirs $(LIBMAIN2) $(FW_ROM0) $(FW_ROM1)
+#all: checkdirs $(LIBMAIN2) $(FW_ROM_0) $(FW_ROM_1)
 
 $(LIBMAIN2): $(LIBMAIN)
 	@echo "OC $@"
 	@$(OBJCOPY) -W Cache_Read_Enable_New $^ $@
 
-$(FW_ROM0): $(TARGET_OUT_0)
+$(FW_ROM_0): $(TARGET_OUT_0)
 	@echo "E2 $@"
 	@$(ESPTOOL2) $(FW_USER_ARGS) $(TARGET_OUT_0) $@ $(FW_SECTS)
 
-$(FW_ROM1): $(TARGET_OUT_1)
+$(FW_ROM_1): $(TARGET_OUT_1)
 	@echo "E2 $@"
 	@$(ESPTOOL2) $(FW_USER_ARGS) $(TARGET_OUT_1) $@ $(FW_SECTS)
 
@@ -152,7 +148,7 @@ checkdirs: $(BUILD_DIR) $(FW_BASE)
 $(BUILD_DIR):
 	@mkdir -p $@
 
-firmware:
+$(FW_BASE):
 	@mkdir -p $@
 
 clean:
@@ -160,4 +156,3 @@ clean:
 	@rm -rf $(FW_BASE)
 
 $(foreach bdir,$(BUILD_DIR),$(eval $(call compile-objects,$(bdir))))
-
