@@ -13,7 +13,7 @@ want to use big flash support at all see the separate instructions below.
 Building
 --------
  0) Patch and compile sming, patch available here:
-    http://www.esp8266.com/viewtopic.php?f=35&t=4288&p=26914#p26914
+    https://patch-diff.githubusercontent.com/raw/anakod/Sming/pull/244.diff
  1) Copy or symlink rboot.h (the version you used to build rBoot) & rboot-ota.h
     to the include directory.
  2) Copy or symlink rboot-bigflash.c & rboot-smingota.c to the app directory.
