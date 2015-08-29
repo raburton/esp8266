@@ -128,7 +128,7 @@ endef
 # single rom image for rBoot big flash support and 1mb slots
 all: checkdirs $(LIBMAIN2) $(FW_ROM_0) $(SPIFFS)
 # dual rom images for rBoot without big flash support and/or two smaller rom slots
-#all: checkdirs $(LIBMAIN2) $(FW_ROM_0) $(FW_ROM_1)
+#all: checkdirs $(LIBMAIN2) $(FW_ROM_0) $(FW_ROM_1) $(SPIFFS)
 
 $(SPIFFS):
 	@echo "SP $@"
