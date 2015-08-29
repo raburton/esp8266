@@ -24,9 +24,8 @@ Building
     your OTA webserver.
  6) Set WIFI_SSID & WIFI_PWD environment variable with your wifi details.
  7) make
- 8) Create spiffs filesystem (currently a manual step, length up to 0x70000).
- 9) Flash rom and spiffs (see below).
-10) Put rom0.bin in the root of your webserver for OTA.
+ 8) Flash rom and spiffs (see below).
+ 9) Put rom0.bin in the root of your webserver for OTA.
 
 Flashing
 --------
@@ -42,8 +41,8 @@ formatted when the second rom first boots).
 Notes
 -----
 spiffs_mount_manual(address, length) must be called from init. The address must
-be 0x40200000 + physical flash address. It does not use memory mapped flash, so
-the reason for strang addressing this is not clear.
+be 0x40200000 + physical flash address. It does not use memory mapped flash so
+the reason for this strange addressing is not clear.
 
 Important compiler flags used:
 DISABLE_SPIFFS - doesn't disable spiffs, but prevents automounting at the wrong

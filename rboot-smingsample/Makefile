@@ -9,10 +9,16 @@ ESP_HOME ?= /opt/esp-open-sdk
 SDK_BASE ?= $(ESP_HOME)/sdk
 # path to esptool2, can be overridden
 ESPTOOL2 ?= ../esptool2/esptool2
+# path to spiffy, can be overridden
+SPIFFY   ?= spiffy
 
 # use wifi settings from environment or hard code them here
 WIFI_SSID ?= ""
 WIFI_PWD ?= ""
+
+# spiffs input directory and output size
+SPIFF_FILES ?= spiffs
+SPIFF_SIZE  ?= 458752
 
 # output directories
 BUILD_BASE	= build
@@ -32,7 +38,7 @@ CFLAGS		= -Os -g -Wpointer-arith -Wundef -Werror -Wl,-EL -nostdlib -mlongcalls -
 CXXFLAGS	= $(CFLAGS) -fno-rtti -fno-exceptions -std=c++11 -felide-constructors
 
 # linker flags used to generate the main object file
-LDFLAGS		= -nostdlib -u call_user_start -u Cache_Read_Enable_New -Wl,-static -Wl,--gc-sections -Wl,-Map=$(FW_BASE)/firmware.map
+LDFLAGS		= -nostdlib -u call_user_start -u Cache_Read_Enable_New -Wl,-static -Wl,--gc-sections -Wl,-Map=$(basename $@).map
 
 # linker script used for the above linker step
 LD_SCRIPT_0 = rom0.ld
@@ -47,6 +53,9 @@ FW_SECTS = .text .data .rodata
 FW_USER_ARGS = -quiet -bin -boot2
 FW_ROM_0 = rom0
 FW_ROM_1 = rom1
+
+# spiffs output filename
+SPIFFS = "spiffs"
 
 export COMPILE := gcc
 export PATH := $(ESP_HOME)/xtensa-lx106-elf/bin:$(PATH)
@@ -90,8 +99,10 @@ EXTRA_INCDIR	:= $(addprefix -I,$(EXTRA_INCDIR))
 
 USER_LIBDIRS := $(addprefix -L,$(USER_LIBDIRS))
 
-FW_ROM_0	:= $(addprefix $(FW_BASE)/,$(FW_ROM_0).bin)
-FW_ROM_1	:= $(addprefix $(FW_BASE)/,$(FW_ROM_1).bin)
+FW_ROM_0  := $(addprefix $(FW_BASE)/,$(FW_ROM_0).bin)
+FW_ROM_1  := $(addprefix $(FW_BASE)/,$(FW_ROM_1).bin)
+
+SPIFFS    := $(addprefix $(FW_BASE)/,$(SPIFFS).bin)
 
 ifneq ($(WIFI_SSID), "")
 	CFLAGS += -DWIFI_SSID=\"$(WIFI_SSID)\"
@@ -115,9 +126,14 @@ endef
 .PHONY: all checkdirs clean
 
 # single rom image for rBoot big flash support and 1mb slots
-all: checkdirs $(LIBMAIN2) $(FW_ROM_0)
+all: checkdirs $(LIBMAIN2) $(FW_ROM_0) $(SPIFFS)
 # dual rom images for rBoot without big flash support and/or two smaller rom slots
 #all: checkdirs $(LIBMAIN2) $(FW_ROM_0) $(FW_ROM_1)
+
+$(SPIFFS):
+	@echo "SP $@"
+	@$(SPIFFY) $(SPIFF_SIZE) $(SPIFF_FILES)
+	@mv spiff_rom.bin $(SPIFFS)
 
 $(LIBMAIN2): $(LIBMAIN)
 	@echo "OC $@"
