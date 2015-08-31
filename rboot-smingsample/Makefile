@@ -16,6 +16,11 @@ SPIFFY   ?= spiffy
 WIFI_SSID ?= ""
 WIFI_PWD ?= ""
 
+# uncomment to produce two roms with different irom offsets
+# e.g. for two 512k roms within same 1mb block of flash
+# requires creation of rom1.ld - see rBoot readme
+#TWO_ROMS ?= 1
+
 # spiffs input directory and output size
 SPIFF_FILES ?= spiffs
 SPIFF_SIZE  ?= 458752
@@ -111,6 +116,14 @@ ifneq ($(WIFI_PWD), "")
 	CFLAGS += -DWIFI_PWD=\"$(WIFI_PWD)\"
 endif
 
+ifeq ($(TWO_ROMS),1)
+	# set a define so ota code can choose correct rom
+	CFLAGS += -DTWO_ROMS
+else
+	# eliminate the second rom make target from the build
+	FW_ROM_1 = $()
+endif
+
 vpath %.c $(SRC_DIR)
 vpath %.cpp $(SRC_DIR)
 
@@ -125,10 +138,7 @@ endef
 
 .PHONY: all checkdirs clean
 
-# single rom image for rBoot big flash support and 1mb slots
-all: checkdirs $(LIBMAIN2) $(FW_ROM_0) $(SPIFFS)
-# dual rom images for rBoot without big flash support and/or two smaller rom slots
-#all: checkdirs $(LIBMAIN2) $(FW_ROM_0) $(FW_ROM_1) $(SPIFFS)
+all: checkdirs $(LIBMAIN2) $(FW_ROM_0) $(FW_ROM_1) $(SPIFFS)
 
 $(SPIFFS):
 	@echo "SP $@"

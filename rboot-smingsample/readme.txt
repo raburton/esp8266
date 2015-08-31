@@ -46,23 +46,26 @@ the reason for this strange addressing is not clear.
 
 Important compiler flags used:
 DISABLE_SPIFFS - doesn't disable spiffs, but prevents automounting at the wrong
-  location (Sming/appinit/user_main.cpp). Instead we call spiffs_mount_manual
+  location (in Sming/appinit/user_main.cpp). Instead we call spiffs_mount_manual
   from init.
 RBOOT_BUILD_SMING - ensures big flash support function is correcly marked to
   remain in iram (plus potentially other sming specific code in future).
 
 Disabling big flash
 -------------------
+If you want to use, for example, two 512k roms in the first 1mb block of flash
+(old style) then follow these instructions two produce two separately linked
+roms. If you are flashing a single rom to multiple 1mb flash blocks (using big
+flash) you only need one linked rom that can be used on each.
+
 This assumes you understand the concepts explained in the rBoot readme about
 memory mapping and setting linker script address. This is not covered here, just
 how to use this sample without bigflash support.
 
+- Do not copy/link rboot-bigflash.c in to your app directory.
 - Copy rom0.ld to rom1.ld.
 - Adjust the rom offsets and length as appropriate in each ld file.
-- Edit the "all" target in the Makefile, comment out the default version and
-  uncomment the alternate version. This will cause two roms to be built.
-- Uncomment the indicated lines in OtaUpdate (in application.cpp) so the http
-  request gets the correct rom.
+- Uncomment 'TWO_ROMS ?= 1' in the makefile (or set as an environment variable).
 - After building copy all the rom*.bin files to the root of your web server.
 
 If you want more than two roms you must be an advanced user and should be able

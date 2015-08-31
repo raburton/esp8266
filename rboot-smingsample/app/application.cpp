@@ -50,8 +50,6 @@ static void OtaUpdate() {
 	ota->request = (uint8 *)os_zalloc(512);
 	
 	// select rom slot to flash
-	//uncomment these lines to enable multiple different roms
-	// (only needed if not using big flash support with 1mb slots)
 	slot = rboot_get_current_rom();
 	if (slot == 0) slot = 1; else slot = 0;
 	ota->rom_slot = slot;
@@ -59,10 +57,11 @@ static void OtaUpdate() {
 	// actual http request
 	os_sprintf((char*)ota->request, 
 		"GET /%s HTTP/1.1\r\nHost: " IPSTR "\r\n" HTTP_HEADER,
-		// comment out next line if not using big flash
+#ifdef TWO_ROMS
+		(slot == 0 ? "rom0.bin" : "rom1.bin"),
+#else
 		"rom0.bin",
-		// and uncomment this one:
-		//(slot == 0 ? "rom0.bin" : "rom1.bin"),
+#endif
 		IP2STR(ota->ip));
 	
 	// start the upgrade process
