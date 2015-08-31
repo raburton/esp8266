@@ -1,12 +1,15 @@
 # name for the target project
 TARGET = app
 
+## note: paths for windows should use / instead of \
 # default SMING_HOME, can be overridden
 SMING_HOME ?= /opt/Sming/Sming
 # default ESP_HOME, can be overridden
 ESP_HOME ?= /opt/esp-open-sdk
 # sdk path, can be overridden
 SDK_BASE ?= $(ESP_HOME)/sdk
+# gcc path, can be overridden
+XTENSA_TOOLS_ROOT := $(ESP_HOME)/xtensa-lx106-elf/bin
 # path to esptool2, can be overridden
 ESPTOOL2 ?= ../esptool2/esptool2
 # path to spiffy, can be overridden
@@ -30,8 +33,8 @@ BUILD_BASE	= build
 FW_BASE		= firmware
 
 # which modules (subdirectories) of the project to include in compiling
-MODULES		?= app
-MODULES		+= $(SMING_HOME)/appinit
+MODULES ?= app
+MODULES += $(subst :,,$(SMING_HOME)/appinit)
 EXTRA_INCDIR    ?= include $(SMING_HOME)/include $(SMING_HOME)/ $(SMING_HOME)/system/include $(SMING_HOME)/Wiring $(SMING_HOME)/Libraries $(SMING_HOME)/SmingCore $(SDK_BASE)/../include
 
 # libraries used in this project, mainly provided by the SDK
@@ -60,19 +63,18 @@ FW_ROM_0 = rom0
 FW_ROM_1 = rom1
 
 # spiffs output filename
-SPIFFS = "spiffs"
+SPIFFS = spiffs
 
 export COMPILE := gcc
-export PATH := $(ESP_HOME)/xtensa-lx106-elf/bin:$(PATH)
-XTENSA_TOOLS_ROOT := $(ESP_HOME)/xtensa-lx106-elf/bin
+export PATH := $(XTENSA_TOOLS_ROOT):$(PATH)
 
 # select which tools to use as compiler, librarian and linker
-CC		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-gcc
-CXX		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-g++
-AR		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-ar
-LD		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-gcc
-OBJCOPY := $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-objcopy
-OBJDUMP := $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-objdump
+CC      := xtensa-lx106-elf-gcc
+CXX     := xtensa-lx106-elf-g++
+AR      := xtensa-lx106-elf-ar
+LD      := xtensa-lx106-elf-gcc
+OBJCOPY := xtensa-lx106-elf-objcopy
+OBJDUMP := xtensa-lx106-elf-objdump
 
 ####
 #### no user configurable options below here
