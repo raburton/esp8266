@@ -12,6 +12,10 @@ want to use big flash support at all see the separate instructions below.
 
 Building
 --------
+Do to problems with make and Windows paths (containing colons) if you are on
+Windows you will need to copy Sming/Sming/appinit/user_main.cpp to the app
+directory of the sample project. This is not needed on Linux or OSX.
+
  0) Patch and compile sming, patch available here:
     https://patch-diff.githubusercontent.com/raw/anakod/Sming/pull/244.diff
  1) Copy or symlink rboot.h (the version you used to build rBoot) & rboot-ota.h
