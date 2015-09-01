@@ -11,17 +11,13 @@ An open source boot loader, with more features and less memory usage than the SD
 
 See my blog for more information: [http://richard.burtons.org/2015/05/18/rboot-a-new-boot-loader-for-esp8266/](http://richard.burtons.org/2015/05/18/rboot-a-new-boot-loader-for-esp8266/)
 
-rBoot-ota
--
-Code to add to your project to support Over The Air (OTA) updates with rBoot.
-
 rBoot-sampleproject
 -
-A simple C application to demonstrate the rBoot OTA API.
+A simple C application to demonstrate rBoot Over-The-Air (OTA) updates, with code you can use in your own projects.
 
 rBoot-smingsample
 -
-A simple Sming (C++) application to demonstrate the rBoot OTA API, big flash and spiffs.
+A simple Sming (C++) application to demonstrate rBoot Over-The-Air (OTA) updates as well as big flash and spiffs, with code you can use in your own projects.
 
 esptool2
 -

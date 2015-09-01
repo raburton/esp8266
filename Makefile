@@ -36,13 +36,13 @@ rboot:
 rboot-sampleproject/rboot.h: rboot/rboot.h
 	@cp $< $@
 
-rboot-sampleproject/rboot-ota.h: rboot-ota/rboot-ota.h
+rboot-sampleproject/rboot-api.h: rboot/rboot-api.h
 	@cp $< $@
 
-rboot-sampleproject/rboot-ota.c: rboot-ota/rboot-ota.c
+rboot-sampleproject/rboot-api.c: rboot/rboot-api.c
 	@cp $< $@
 
-rboot-sampleproject: rboot-sampleproject/rboot.h rboot-sampleproject/rboot-ota.h rboot-sampleproject/rboot-ota.c
+rboot-sampleproject: rboot-sampleproject/rboot.h rboot-sampleproject/rboot-api.h rboot-sampleproject/rboot-api.c
 	@echo "Building rBoot sample project"
 	@$(MAKE) -C rboot-sampleproject
 

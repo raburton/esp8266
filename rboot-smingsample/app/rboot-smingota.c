@@ -1,10 +1,13 @@
 //////////////////////////////////////////////////
-// rBoot OTA sample code for ESP8266.
+// rBoot OTA sample code for ESP8266 Sming API.
 // Copyright 2015 Richard A Burton
 // richardaburton@gmail.com
 // See license.txt for license terms.
 // OTA code based on SDK sample from Espressif.
 //////////////////////////////////////////////////
+
+// block inclusion of sming user_config.h
+#define __USER_CONFIG_H__
 
 #include <c_types.h>
 #include <user_interface.h>
@@ -12,7 +15,7 @@
 #include <mem.h>
 #include <osapi.h>
 
-#include "rboot-ota.h"
+#include "rboot-smingota.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,24 +25,33 @@ extern "C" {
 #define UPGRADE_FLAG_START		0x01
 #define UPGRADE_FLAG_FINISH		0x02
 
-// structure to hold our internal update state
 typedef struct {
-	rboot_ota *ota;
+	uint8 rom_slot;   // rom slot to update, or FLASH_BY_ADDR
+	ota_callback callback;  // user callback when completed
 	uint32 total_len;
 	uint32 content_len;
 	struct espconn *conn;
-	rboot_write_status status;
-} upgrade_param;
+	rboot_write_status write_status;
+} upgrade_status;
 
-static upgrade_param *upgrade;
+static upgrade_status *upgrade;
 static os_timer_t ota_timer;
+
+void uart0_send(const char *str) {
+	uint8 i = 0;
+	while (str[i]) {
+        uart_tx_one_char(str[i]);
+		i++;
+    }
+}
 
 // clean up at the end of the update
 // will call the user call back to indicate completion
 void ICACHE_FLASH_ATTR rboot_ota_deinit() {
 	
 	bool result;
-	rboot_ota *ota;
+	uint8 rom_slot;
+	ota_callback callback;
 	struct espconn *conn;
 	
 	os_timer_disarm(&ota_timer);
@@ -48,8 +60,9 @@ void ICACHE_FLASH_ATTR rboot_ota_deinit() {
 	// then we can clean it up early, so disconnect callback
 	// can distinguish between us calling it after update finished
 	// or being called earlier in the update process
-	ota = upgrade->ota;
 	conn = upgrade->conn;
+	rom_slot = upgrade->rom_slot;
+	callback = upgrade->callback;
 	
 	// clean up
 	os_free(upgrade);
@@ -67,8 +80,8 @@ void ICACHE_FLASH_ATTR rboot_ota_deinit() {
 	}
 	
 	// call user call back
-	if (ota->callback) {
-		ota->callback(ota, result);
+	if (callback) {
+		callback(result, rom_slot);
 	}
 	
 }
@@ -95,7 +108,7 @@ static void ICACHE_FLASH_ATTR upgrade_recvcb(void *arg, char *pusrdata, unsigned
 			// running total of download length
 			upgrade->total_len += length;
 			// process current chunk
-			rboot_write_flash(&upgrade->status, (uint8*)ptrData, length);
+			rboot_write_flash(&upgrade->write_status, (uint8*)ptrData, length);
 			// work out total download size
 			ptrLen += 16;
 			ptr = (char *)os_strstr(ptrLen, "\r\n");
@@ -109,7 +122,7 @@ static void ICACHE_FLASH_ATTR upgrade_recvcb(void *arg, char *pusrdata, unsigned
 	} else {
 		// not the first chunk, process it
 		upgrade->total_len += length;
-		rboot_write_flash(&upgrade->status, (uint8*)pusrdata, length);
+		rboot_write_flash(&upgrade->write_status, (uint8*)pusrdata, length);
 	}
 	
 	// check if we are finished
@@ -156,6 +169,9 @@ static void ICACHE_FLASH_ATTR upgrade_disconcb(void *arg) {
 // successfully connected to update server, send the request
 static void ICACHE_FLASH_ATTR upgrade_connect_cb(void *arg) {
 	
+	uint8 *request;
+	uint8 ip[] = OTA_IP;
+	
 	// disable the timeout
 	os_timer_disarm(&ota_timer);
 
@@ -163,10 +179,27 @@ static void ICACHE_FLASH_ATTR upgrade_connect_cb(void *arg) {
 	espconn_regist_disconcb(upgrade->conn, upgrade_disconcb);
 	espconn_regist_recvcb(upgrade->conn, upgrade_recvcb);
 
+	// http request string
+	request = (uint8 *)os_malloc(512);
+	if (!request) {
+		uart0_send("No ram!\r\n");
+		rboot_ota_deinit();
+		return;
+	}
+	os_sprintf((char*)request,
+		"GET /%s HTTP/1.1\r\nHost: " IPSTR "\r\n" HTTP_HEADER,
+#ifdef TWO_ROMS
+		(upgrade->rom_slot == FLASH_BY_ADDR ? OTA_FILE : (upgrade->rom_slot == 0 ? OTA_ROM0 : OTA_ROM1)),
+#else
+		(upgrade->rom_slot == FLASH_BY_ADDR ? OTA_FILE : OTA_ROM0),
+#endif
+		IP2STR(ip));
+	
 	// send the http request, with timeout for reply
 	os_timer_setfn(&ota_timer, (os_timer_func_t *)rboot_ota_deinit, 0);
 	os_timer_arm(&ota_timer, OTA_NETWORK_TIMEOUT, 0);
-	espconn_sent(upgrade->conn, upgrade->ota->request, os_strlen((char*)upgrade->ota->request));
+	espconn_sent(upgrade->conn, request, os_strlen((char*)request));
+	os_free(request);
 }
 
 // connection attempt timed out
@@ -175,60 +208,6 @@ static void ICACHE_FLASH_ATTR connect_timeout_cb() {
 	// not connected so don't call disconnect on the connection
 	// but call our own disconnect callback to do the cleanup
 	upgrade_disconcb(upgrade->conn);
-}
-
-// initialise the internal update state structure
-bool ICACHE_FLASH_ATTR rboot_ota_init(rboot_ota *ota) {
-
-	rboot_config bootconf;
-
-	upgrade = (upgrade_param*)os_zalloc(sizeof(upgrade_param));
-	if (!upgrade) {
-		uart0_send("No ram!\r\n");
-		return false;
-	}
-	
-	// store user update options
-	upgrade->ota = ota;
-	
-	// get details of rom slot to update
-	bootconf = rboot_get_config();
-	if (ota->rom_slot == FLASH_BY_ADDR) {
-		if (ota->rom_addr % SECTOR_SIZE) {
-			uart0_send("Bad rom addr.\r\n");
-			os_free(upgrade);
-			return false;
-		}
-		upgrade->status = rboot_write_init(ota->rom_addr);
-	} else {
-		if ((ota->rom_slot > bootconf.count) || (bootconf.roms[ota->rom_slot] % SECTOR_SIZE)) {
-			uart0_send("Bad rom slot.\r\n");
-			os_free(upgrade);
-			return false;
-		}
-		upgrade->status = rboot_write_init(bootconf.roms[ota->rom_slot]);
-	}
-	
-	// create connection
-	upgrade->conn = (struct espconn *)os_zalloc(sizeof(struct espconn));
-	if (!upgrade->conn) {
-		uart0_send("No ram!\r\n");
-		os_free(upgrade);
-		return false;
-	}
-	upgrade->conn->proto.tcp = (esp_tcp *)os_zalloc(sizeof(esp_tcp));
-	if (!upgrade->conn->proto.tcp) {
-		os_free(upgrade->conn);
-		upgrade->conn = 0;
-		uart0_send("No ram!\r\n");
-		os_free(upgrade);
-		return false;
-	}
-	
-	// set update flag
-	system_upgrade_flag_set(UPGRADE_FLAG_START);
-	
-	return true;
 }
 
 static const char* ICACHE_FLASH_ATTR esp_errstr(sint8 err) {
@@ -268,30 +247,66 @@ static void ICACHE_FLASH_ATTR upgrade_recon_cb(void *arg, sint8 errType) {
 }
 
 // start the ota process, with user supplied options
-bool ICACHE_FLASH_ATTR rboot_ota_start(rboot_ota *ota) {
+bool ICACHE_FLASH_ATTR rboot_ota_start(ota_callback callback) {
+
+	uint8 slot;
+	uint8 ip[] = OTA_IP;
+	rboot_config bootconf;
 	
 	// check not already updating
 	if (system_upgrade_flag_check() == UPGRADE_FLAG_START) {
 		return false;
 	}
 	
-	// check parameters
-	if (!ota || !ota->request) {
-		uart0_send("Invalid parameters.\r\n");
+	// create upgrade status structure
+	upgrade = (upgrade_status*)os_zalloc(sizeof(upgrade_status));
+	if (!upgrade) {
+		uart0_send("No ram!\r\n");
 		return false;
 	}
 	
-	// set up update structure
-	if (!rboot_ota_init(ota)) {
+	// store the callback
+	upgrade->callback = callback;
+	
+	// get details of rom slot to update
+	bootconf = rboot_get_config();
+	slot = bootconf.current_rom;
+	if (slot == 0) slot = 1; else slot = 0;
+	upgrade->rom_slot = slot;
+
+	// flash to rom slot
+	upgrade->write_status = rboot_write_init(bootconf.roms[upgrade->rom_slot]);
+	// to flash a file (e.g. containing a filesystem) to an arbitrary location
+	// (e.g. 0x40000 bytes after the start of the rom) use code this like instead:
+	//upgrade->rom_slot = FLASH_BY_ADDR;
+	//upgrade->write_status = rboot_write_init(bootconf.roms[upgrade->rom_slot] + 0x40000);
+	// Note: address must be start of a sector (multiple of 4k)!
+	
+	// create connection
+	upgrade->conn = (struct espconn *)os_zalloc(sizeof(struct espconn));
+	if (!upgrade->conn) {
+		uart0_send("No ram!\r\n");
+		os_free(upgrade);
 		return false;
 	}
+	upgrade->conn->proto.tcp = (esp_tcp *)os_zalloc(sizeof(esp_tcp));
+	if (!upgrade->conn->proto.tcp) {
+		os_free(upgrade->conn);
+		upgrade->conn = 0;
+		uart0_send("No ram!\r\n");
+		os_free(upgrade);
+		return false;
+	}
+	
+	// set update flag
+	system_upgrade_flag_set(UPGRADE_FLAG_START);
 	
 	// set up connection
 	upgrade->conn->type = ESPCONN_TCP;
 	upgrade->conn->state = ESPCONN_NONE;
 	upgrade->conn->proto.tcp->local_port = espconn_port();
-	upgrade->conn->proto.tcp->remote_port = ota->port;
-	*(uint32*)upgrade->conn->proto.tcp->remote_ip = *(uint32*)ota->ip;
+	upgrade->conn->proto.tcp->remote_port = OTA_PORT;
+	*(uint32*)upgrade->conn->proto.tcp->remote_ip = *(uint32*)ip;
 	// set connection call backs
 	espconn_regist_connectcb(upgrade->conn, upgrade_connect_cb);
 	espconn_regist_reconcb(upgrade->conn, upgrade_recon_cb);

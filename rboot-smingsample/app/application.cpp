@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////
-// rBoot sming sample project.
+// rBoot Sming sample project.
 // Copyright 2015 Richard A Burton
 // richardaburton@gmail.com
 // See license.txt for license terms.
@@ -8,71 +8,34 @@
 #include <user_config.h>
 #include <SmingCore/SmingCore.h>
 
-#include <rboot-ota.h>
+#include <rboot-smingota.h>
 
-static const uint8 ota_ip[] = {192,168,7,5};
+static void ICACHE_FLASH_ATTR OtaUpdate_CallBack(bool result, uint8 rom_slot) {
 
-#define HTTP_HEADER "Connection: keep-alive\r\n\
-Cache-Control: no-cache\r\n\
-User-Agent: rBoot-SmingSample/1.0\r\n\
-Accept: */*\r\n\r\n"
-/**/
-
-static void OtaUpdate_CallBack(void *arg, bool result) {
-	
-	char msg[40];
-	rboot_ota *ota = (rboot_ota*)arg;
-	
 	if(result == true) {
-		// success, reboot
-		os_sprintf(msg, "Firmware updated, rebooting to rom %d...\r\n", ota->rom_slot);
-		Serial.println(msg);
-		rboot_set_current_rom(ota->rom_slot);
-		System.restart();
+		// success
+		if (rom_slot == FLASH_BY_ADDR) {
+			Serial.println("Write successful.");
+		} else {
+			// set to boot new rom and then reboot
+			Serial.printf("Firmware updated, rebooting to rom %d...\r\n", rom_slot);
+			rboot_set_current_rom(rom_slot);
+			System.restart();
+		}
 	} else {
-		// fail, cleanup
-		Serial.println("Firmware update failed!\r\n");
-		os_free(ota->request);
-		os_free(ota);
+		// fail
+		Serial.println("Firmware update failed!");
 	}
 }
 
 static void OtaUpdate() {
 	
-	uint8 slot;
-	rboot_ota *ota;
-	
-	// create the update structure
-	ota = (rboot_ota*)os_zalloc(sizeof(rboot_ota));
-	os_memcpy(ota->ip, ota_ip, 4);
-	ota->port = 80;
-	ota->callback = (ota_callback)OtaUpdate_CallBack;
-	ota->request = (uint8 *)os_zalloc(512);
-	
-	// select rom slot to flash
-	slot = rboot_get_current_rom();
-	if (slot == 0) slot = 1; else slot = 0;
-	ota->rom_slot = slot;
-	
-	// actual http request
-	os_sprintf((char*)ota->request, 
-		"GET /%s HTTP/1.1\r\nHost: " IPSTR "\r\n" HTTP_HEADER,
-#ifdef TWO_ROMS
-		(slot == 0 ? "rom0.bin" : "rom1.bin"),
-#else
-		"rom0.bin",
-#endif
-		IP2STR(ota->ip));
-	
 	// start the upgrade process
-	if (rboot_ota_start(ota)) {
-		Serial.println("Updating...\r\n");
+	if (rboot_ota_start((ota_callback)OtaUpdate_CallBack)) {
+		Serial.println("Updating...");
 	} else {
-		Serial.println("Updating failed!\r\n\r\n");
-		os_free(ota->request);
-		os_free(ota);
+		Serial.println("Updating failed!\r\n");
 	}
-	
 }
 
 void Switch() {
@@ -81,7 +44,7 @@ void Switch() {
 	if (before == 0) after = 1; else after = 0;
 	Serial.printf("Swapping from rom %d to rom %d.\r\n", before, after);
 	rboot_set_current_rom(after);
-	Serial.printf("Restarting...\r\n\r\n");
+	Serial.println("Restarting...\r\n");
 	System.restart();
 }
 
@@ -167,6 +130,7 @@ void init() {
 	// disable access point
 	WifiAccessPoint.enable(false);
 	
+	Serial.printf("\r\nCurrently running rom %d.\r\n", slot);
 	Serial.println("Type 'help' and press enter for instructions.");
 	Serial.println();
 	
