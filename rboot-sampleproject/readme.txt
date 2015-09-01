@@ -14,9 +14,8 @@ To compile
 4) Edit the Makefile to set the paths to the SDK and esptool2.
 5) Set WIFI_SSID & WIFI_PWD as env vars or in the makefile.
 6) Set OTA server details in rboot-ota.h
-7) If you haven't already compiled rBoot you'll need to do that too.
-8) Flash, as below.
-9) Connect a terminal and type 'help'.
+7) Flash, as below.
+8) Connect a terminal and type 'help'.
 
 All the above are available from GitHub: https://github.com/raburton/esp8266
 
