@@ -3,6 +3,10 @@
 # https://github.com/raburton/esp8266
 #
 
+# use wifi settings from environment or hard code them here
+WIFI_SSID ?= ""
+WIFI_PWD  ?= ""
+
 SDK_BASE   ?= C:/esp_iot_sdk_v1.3.0
 SDK_LIBDIR  = lib
 SDK_INCDIR  = include
@@ -29,6 +33,13 @@ LDFLAGS = -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
 SRC		:= $(wildcard *.c)
 OBJ		:= $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRC))
 LIBS		:= $(addprefix -l,$(LIBS))
+
+ifneq ($(WIFI_SSID), "")
+	CFLAGS += -DWIFI_SSID=\"$(WIFI_SSID)\"
+endif
+ifneq ($(WIFI_PWD), "")
+	CFLAGS += -DWIFI_PWD=\"$(WIFI_PWD)\"
+endif
 
 .SECONDARY:
 .PHONY: all clean

@@ -2,28 +2,21 @@
 #define __RBOOT_OTA_H__
 
 //////////////////////////////////////////////////
-// API for OTA and rBoot config, for ESP8266.
+// rBoot OTA sample code for ESP8266.
 // Copyright 2015 Richard A Burton
 // richardaburton@gmail.com
 // See license.txt for license terms.
 // OTA code based on SDK sample from Espressif.
 //////////////////////////////////////////////////
 
-#include "rboot.h"
+#include "rboot-api.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// timeout for the initial connect (in ms)
-#define OTA_CONNECT_TIMEOUT  10000
-
-// timeout for each ota download recv
-#define OTA_DOWNLOAD_TIMEOUT 10000
-
-#define UPGRADE_FLAG_IDLE		0x00
-#define UPGRADE_FLAG_START		0x01
-#define UPGRADE_FLAG_FINISH		0x02
+// timeout for the initial connect and each recv (in ms)
+#define OTA_NETWORK_TIMEOUT  10000
 
 #define FLASH_BY_ADDR 0xff
 
@@ -39,10 +32,6 @@ typedef struct {
 } rboot_ota;
 
 bool rboot_ota_start(rboot_ota *ota);
-rboot_config rboot_get_config();
-bool rboot_set_config(rboot_config *conf);
-uint8 rboot_get_current_rom();
-bool rboot_set_current_rom(uint8 rom);
 
 #ifdef __cplusplus
 }

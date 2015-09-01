@@ -3,3 +3,5 @@ build
 rboot.h
 rboot-ota.h
 rboot-ota.c
+rboot-api.h
+rboot-api.c

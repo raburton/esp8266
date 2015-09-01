@@ -46,8 +46,8 @@ void ICACHE_FLASH_ATTR wifi_config_station() {
 
 	wifi_set_opmode(0x1);
 	stationConf.bssid_set = 0;
-	os_strcpy(&stationConf.ssid, SSID, os_strlen(SSID));
-	os_strcpy(&stationConf.password, PASS, os_strlen(PASS));
+	os_strcpy(&stationConf.ssid, WIFI_SSID, os_strlen(WIFI_SSID));
+	os_strcpy(&stationConf.password, WIFI_PWD, os_strlen(WIFI_PWD));
 	wifi_station_set_config(&stationConf);
 	uart0_send("wifi connecting...\r\n");
 	wifi_station_connect();

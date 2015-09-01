@@ -5,7 +5,12 @@
 // See license.txt for license terms.
 //////////////////////////////////////////////////
 
-#define SSID "your-ssid"
-#define PASS "your-password"
+// values will be passed in from the Makefile
+#ifndef WIFI_SSID
+#define WIFI_SSID "ssid"
+#endif
+#ifndef WIFI_PWD
+#define WIFI_PWD "password"
+#endif
 
 static const uint8 ota_ip[] = {192,168,7,5};
