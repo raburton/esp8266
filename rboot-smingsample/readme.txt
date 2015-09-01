@@ -30,8 +30,7 @@ directory of the sample project. This is not necessary on Linux or OSX.
  4) Set ESP_HOME & SMING_HOME, as environment variables or edit the Makefile, as
     you would for general Sming compiling.
  5) Set ESPTOOL2 (env var or in the Makefile) to point to the esptool2 binary.
- 6) Edit the OTA ip address (ota_ip) at the top of application.cpp to point to
-    your OTA webserver.
+ 6) Edit the OTA server details in include/rboot-smingota.h
  7) Set WIFI_SSID & WIFI_PWD environment variable with your wifi details.
  8) make
  9) Flash rom and spiffs (see below).

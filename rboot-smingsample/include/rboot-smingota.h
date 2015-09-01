@@ -19,7 +19,7 @@ extern "C" {
 #define OTA_IP { 192, 168, 7, 5 }
 #define OTA_PORT 80
 #define OTA_ROM0 "rom0.bin"
-// OTA_ROM1 is only used for TWO_ROM mode
+// OTA_ROM1 is only used for TWO_ROMS mode
 #define OTA_ROM1 "rom1.bin"
 // OTA_FILE is not required, but is part of the example
 // code for writing arbitrary files to flash
