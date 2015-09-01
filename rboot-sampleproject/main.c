@@ -103,61 +103,33 @@ void ICACHE_FLASH_ATTR Switch() {
 	system_restart();
 }
 
-static void ICACHE_FLASH_ATTR OtaUpdate_CallBack(void *arg, bool result) {
-	
-	char msg[40];
-	rboot_ota *ota = (rboot_ota*)arg;
-	
+static void ICACHE_FLASH_ATTR OtaUpdate_CallBack(bool result, uint8 rom_slot) {
+
 	if(result == true) {
-		// success, reboot
-		os_sprintf(msg, "Firmware updated, rebooting to rom %d...\r\n", ota->rom_slot);
-		uart0_send(msg);
-		rboot_set_current_rom(ota->rom_slot);
-		system_restart();
+		// success
+		if (rom_slot == FLASH_BY_ADDR) {
+			uart0_send("Write successful.\r\n");
+		} else {
+			// set to boot new rom and then reboot
+			char msg[40];
+			os_sprintf(msg, "Firmware updated, rebooting to rom %d...\r\n", rom_slot);
+			uart0_send(msg);
+			rboot_set_current_rom(rom_slot);
+			system_restart();
+		}
 	} else {
-		// fail, cleanup
+		// fail
 		uart0_send("Firmware update failed!\r\n");
-		os_free(ota->request);
-		os_free(ota);
 	}
 }
 
-#define HTTP_HEADER "Connection: keep-alive\r\n\
-Cache-Control: no-cache\r\n\
-User-Agent: rBoot-Sample/1.0\r\n\
-Accept: */*\r\n\r\n"
-/**/
-
 static void ICACHE_FLASH_ATTR OtaUpdate() {
 	
-	uint8 slot;
-	rboot_ota *ota;
-	
-	// create the update structure
-	ota = (rboot_ota*)os_zalloc(sizeof(rboot_ota));
-	os_memcpy(ota->ip, ota_ip, 4);
-	ota->port = 80;
-	ota->callback = (ota_callback)OtaUpdate_CallBack;
-	ota->request = (uint8 *)os_zalloc(512);
-	
-	// select rom slot to flash
-	slot = rboot_get_current_rom();
-	if (slot == 0) slot = 1; else slot = 0;
-	ota->rom_slot = slot;
-	
-	// actual http request
-	os_sprintf((char*)ota->request,
-		"GET /%s HTTP/1.1\r\nHost: "IPSTR"\r\n" HTTP_HEADER,
-		(slot == 0 ? "rom0.bin" : "rom1.bin"),
-		IP2STR(ota->ip));
-	
 	// start the upgrade process
-	if (rboot_ota_start(ota)) {
+	if (rboot_ota_start((ota_callback)OtaUpdate_CallBack)) {
 		uart0_send("Updating...\r\n");
 	} else {
 		uart0_send("Updating failed!\r\n\r\n");
-		os_free(ota->request);
-		os_free(ota);
 	}
 	
 }

@@ -13,4 +13,3 @@
 #define WIFI_PWD "password"
 #endif
 
-static const uint8 ota_ip[] = {192,168,7,5};
