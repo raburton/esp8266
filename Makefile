@@ -34,12 +34,15 @@ rboot:
 	@$(MAKE) -C rboot
 
 rboot-sampleproject/rboot.h: rboot/rboot.h
+	@echo "Copying $< to $@"
 	@cp $< $@
 
-rboot-sampleproject/rboot-api.h: rboot/rboot-api.h
+rboot-sampleproject/rboot-api.h: rboot/appcode/rboot-api.h
+	@echo "Copying $< to $@"
 	@cp $< $@
 
-rboot-sampleproject/rboot-api.c: rboot/rboot-api.c
+rboot-sampleproject/rboot-api.c: rboot/appcode/rboot-api.c
+	@echo "Copying $< to $@"
 	@cp $< $@
 
 rboot-sampleproject: rboot-sampleproject/rboot.h rboot-sampleproject/rboot-api.h rboot-sampleproject/rboot-api.c
