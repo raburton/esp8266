@@ -22,6 +22,6 @@ esptool2: esptool2.o esptool2_elf.o
 	$(LD) -o $@ $^
 
 clean:
-	@echo "RM *.o esptool2"
+	@echo "RM *.o esptool2 esptool2.exe"
 	@rm -f *.o
-	@rm -f esptool2
+	@rm -f esptool2 esptool2.exe
