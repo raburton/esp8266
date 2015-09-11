@@ -7,7 +7,7 @@
 WIFI_SSID ?= ""
 WIFI_PWD  ?= ""
 
-SDK_BASE   ?= C:/esp_iot_sdk_v1.3.0
+SDK_BASE   ?= /opt/esp-open-sdk/sdk
 SDK_LIBDIR  = lib
 SDK_INCDIR  = include
 
@@ -15,10 +15,13 @@ ESPTOOL2     ?= ../esptool2/esptool2
 FW_SECTS      = .text .data .rodata
 FW_USER_ARGS  = -quiet -bin -boot2
 
-# XTENSA_BINDIR needs trailing slash or can be blank if already in $PATH
-XTENSA_BINDIR ?= C:/xtensa-lx106-elf/bin/
-CC := $(addprefix $(XTENSA_BINDIR),xtensa-lx106-elf-gcc)
-LD := $(addprefix $(XTENSA_BINDIR),xtensa-lx106-elf-gcc)
+ifndef XTENSA_BINDIR
+CC := xtensa-lx106-elf-gcc
+LD := xtensa-lx106-elf-gcc
+else
+CC := $(addprefix $(XTENSA_BINDIR)/,xtensa-lx106-elf-gcc)
+LD := $(addprefix $(XTENSA_BINDIR)/,xtensa-lx106-elf-gcc)
+endif
 
 BUILD_DIR = build
 FIRMW_DIR = firmware

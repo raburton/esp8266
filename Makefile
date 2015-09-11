@@ -16,8 +16,8 @@
 
 ESPTOOL2      ?= $(abspath esptool2/esptool2)
 SDK_BASE      ?= /opt/esp-open-sdk/sdk
-# XTENSA_BINDIR needs trailing slash or can be blank if already in $PATH
-XTENSA_BINDIR ?= /opt/esp-open-sdk/xtensa-lx106-elf/bin/
+# XTENSA_BINDIR can be blank if already in $PATH
+XTENSA_BINDIR ?= /opt/esp-open-sdk/xtensa-lx106-elf/bin
 
 export
 
