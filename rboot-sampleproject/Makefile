@@ -30,7 +30,7 @@ SDK_LIBDIR := $(addprefix $(SDK_BASE)/,$(SDK_LIBDIR))
 SDK_INCDIR := $(addprefix -I$(SDK_BASE)/,$(SDK_INCDIR))
 
 LIBS    = c gcc hal phy net80211 lwip wpa main pp
-CFLAGS  = -Os -g -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals  -D__ets__ -DICACHE_FLASH
+CFLAGS  = -Os -g -O2 -Wpointer-arith -Wundef -Werror -Wno-implicit -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls  -mtext-section-literals  -D__ets__ -DICACHE_FLASH
 LDFLAGS = -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
 
 SRC		:= $(wildcard *.c)
