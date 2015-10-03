@@ -91,8 +91,6 @@ void ICACHE_FLASH_ATTR at24c_writeWait() {
 	do {
 		i2c_master_start();
 		i2c_master_writeByte((uint8)((AT24C_ADDR << 1) | 1));
-		// feed the watchdog, to prevent a watchdog reset of the esp8266
-		slop_wdt_feed();
 	} while (!i2c_master_checkAck());
 	i2c_master_stop();
 }
