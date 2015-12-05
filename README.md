@@ -3,7 +3,8 @@ github.com/raburton/esp8266
 
 A collection of things I've written for the ESP8266 Wifi SOC.
 
-Read on for the contents of this repository. Note: rBoot and esptool2 are now in separate repositories!
+Read on for the contents of this repository.
+**Note:** rBoot and esptool2 are now in separate repositories!
 
 Drivers
 -
@@ -19,7 +20,3 @@ Simple NTP client for ESP8266 and very simple timezone code example.
 Mutex
 -
 A mutex for the ESP8266.
-
-Makefile
--
-A top level Makefile which will build all compilable projects (esptool2, rBoot and rboot-sampleproject). Modify the variables at the top of the file to point to your SDK and Xtensa GCC directories.
